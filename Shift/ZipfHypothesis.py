@@ -1,7 +1,7 @@
 from LOTlib.Miscellaneous import Infinity, log
 from LOTlib.Hypotheses.Lexicon.RecursiveLexicon import RecursiveLexicon
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
-from LOTlib.Evaluation.EvaluationException import RecursionDepthException, TooBigException
+from LOTlib.Eval import EvaluationException
 from Model.Utilities import reachable, zipf
 from Model.Grammar import makeGrammar
 from fractions import Fraction
@@ -10,7 +10,7 @@ default_grammar = makeGrammar([])
 
 
 def make_hyps():
-    return LOTHypothesis(default_grammar, value=None, args=['recurse_', 'C', 'X'])
+    return LOTHypothesis(default_grammar, value=None, display='lambda recurse_, C, X:%s')
 
 
 class KinshipLexicon(RecursiveLexicon):
@@ -24,7 +24,7 @@ class KinshipLexicon(RecursiveLexicon):
     def __call__(self, *args):
         try:
             return RecursiveLexicon.__call__(self, *args)
-        except (RecursionDepthException, TooBigException):
+        except EvaluationException:
             return set()
 
     def compute_prior(self):

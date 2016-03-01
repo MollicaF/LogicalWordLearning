@@ -38,8 +38,8 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
 
     if 'Ancestry' in nterms:
         # CEST
-        grammar.add_rule('SET', 'ancestors_', ['SET', 'C'], 1.0)
-        grammar.add_rule('SET', 'descendants_', ['SET', 'C'], 1.0)
+        grammar.add_rule('SET', 'ancestors', ['SET', 'C'], 1.0)
+        grammar.add_rule('SET', 'descendants', ['SET', 'C'], 1.0)
 
     if 'Paternity' in nterms:
         # TERNAL
@@ -125,8 +125,8 @@ def makeBiasedGrammar(objects, nterms=['Tree', 'Set', 'Gender', 'Generation', 'A
 
     if 'Ancestry' in nterms:
         # CEST
-        grammar.add_rule('SET', 'ancestors_', ['SET', 'C'], 8.0872979353)
-        grammar.add_rule('SET', 'descendants_', ['SET', 'C'], 3.1124377558)
+        grammar.add_rule('SET', 'ancestors', ['SET', 'C'], 8.0872979353)
+        grammar.add_rule('SET', 'descendants', ['SET', 'C'], 3.1124377558)
 
     if 'Paternity' in nterms:
         # TERNAL

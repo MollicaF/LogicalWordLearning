@@ -60,7 +60,7 @@ def run(data_amount):
                                    alpha=options.alpha, verbose=True)
 
     h0 = KinshipLexicon(words=[options.word], alpha=options.alpha)
-    h0.set_word(options.word, LOTHypothesis(grammar, value=None, args=['recurse_', 'C', 'X']))
+    h0.set_word(options.word, LOTHypothesis(grammar, value=None, display='lambda recurse_, C, X:%s'))
 
     hyps = TopN(N=options.top_count)
 

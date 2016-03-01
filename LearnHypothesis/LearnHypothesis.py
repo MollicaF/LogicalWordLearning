@@ -52,7 +52,7 @@ def run(data_pts):
 
     hyps = TopN(N=options.TOP_COUNT)
     h0 = KinshipLexicon(alpha=options.ALPHA)
-    h0.set_word('Word', LOTHypothesis(my_grammar, value=None, args=['recurse_', 'C', 'X']))
+    h0.set_word('Word', LOTHypothesis(my_grammar, value=None, display='lambda recurse_, C, X:%s'))
     mhs = MHSampler(h0, data_pts, options.STEPS, likelihood_temperature=options.llt)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
