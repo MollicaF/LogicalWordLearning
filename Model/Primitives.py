@@ -46,7 +46,7 @@ def all_(context):
     return do
 
 @primitive
-def ancestors_(x, c):
+def ancestors(x, c):
     if len(parents_of_(x, c)) > 0:
         out = parents_of_(x, c)
         new = out
@@ -60,7 +60,7 @@ def ancestors_(x, c):
     return out
 
 @primitive
-def descendants_(x, c):
+def descendants(x, c):
     if len(children_of_(x, c)) > 0:
         out = children_of_(x, c)
         out.update(spouses_of_(children_of_(x, c), c))
@@ -133,15 +133,15 @@ def cousins_(X, C):
 
 @primitive
 def maternal_(X, C):
-    return setdifference_(union_(union_(union_(union_(descendants_(X, C), moms_(X, C)),
-                       descendants_(moms_(X, C), C)),
-                       ancestors_(moms_(X, C), C)), descendants_(ancestors_(moms_(X, C), C), C)), dads_(X, C))
+    return setdifference_(union_(union_(union_(union_(descendants(X, C), moms_(X, C)),
+                       descendants(moms_(X, C), C)),
+                       ancestors(moms_(X, C), C)), descendants(ancestors(moms_(X, C), C), C)), dads_(X, C))
 
 @primitive
 def paternal_(X, C):
-    return setdifference_(union_(union_(union_(union_(descendants_(X, C), dads_(X, C)),
-                       descendants_(dads_(X, C), C)),
-                       ancestors_(dads_(X, C), C)), descendants_(ancestors_(dads_(X, C), C), C)), moms_(X, C))
+    return setdifference_(union_(union_(union_(union_(descendants(X, C), dads_(X, C)),
+                       descendants(dads_(X, C), C)),
+                       ancestors(dads_(X, C), C)), descendants(ancestors(dads_(X, C), C), C)), moms_(X, C))
 
 @primitive
 def generation0_(X, C):
