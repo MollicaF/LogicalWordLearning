@@ -17,14 +17,14 @@ parser = OptionParser()
 parser.add_option("--pre", dest="OUT_PATH", type="string", help="Output file (a pickle of FiniteBestSet)",
                   default="Results/")
 
-parser.add_option("--steps", dest="STEPS", type="int", default=1000000, help="Number of samples to run")
+parser.add_option("--steps", dest="STEPS", type="int", default=100000, help="Number of samples to run")
 parser.add_option("--top", dest="TOP_COUNT", type="int", default=1000, help="Top number of hypotheses to store")
 parser.add_option("--chains", dest="CHAINS", type="int", default=1,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="ALPHA", type="float", default=0.90, help="Noise value")
 parser.add_option("--k", dest="k", type="int", default=2, help="All k-combinations")
-parser.add_option("--random", dest='randomize', type="string", default=True, help="Randomize gramamar priors")
+parser.add_option("--random", dest='randomize', type="string", default=False, help="Randomize gramamar priors")
 
 parser.add_option("--llt", dest="llt", type="float", default=1.0, help="Likelihood temperature")
 
