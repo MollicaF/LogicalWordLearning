@@ -18,28 +18,27 @@ numpy.set_printoptions(threshold=numpy.inf)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 from Model.Givens import simple_tree_objs
 
-grammar = makeGrammar(simple_tree_objs)
+grammar = makeGrammar(simple_tree_objs,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity'])
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the hypotheses
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # map each concept to a hypothesis
-with open('Results/fullspace.pkl', 'r') as f:
+with open('Snowcharming.pkl', 'r') as f:
     hypotheses = list(pickle.load(f))
 
 print "# Loaded hypotheses: ", len(hypotheses)
 
 #for h in hypotheses:
     #print h 
-# hypotheses = hypotheses[:10] # TODO: REMOVE THIS LINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#hypotheses = hypotheses[:10] # TODO: REMOVE THIS LINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the human data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from Model.Givens import simple_tree_context
-from LOTlib.DataAndObjects import FunctionData
 
 L           = [] # each hypothesis's cumulative likelihood to each data point
 GroupLength = []
@@ -56,31 +55,30 @@ with open("human.data", 'r') as f:
 
     for i, line in enumerate(f.readlines()):
 
-        entry = line.split(',')
-        if i > 0: #skip the header
-
+        entry = line.strip('\n').split(',')
+        if i < 1:
+            order = entry
+        else:
             # get the conditioning data
-            data = [KinshipData('Word', 'ego', entry[1], simple_tree_context),
-                    KinshipData('Word', 'ego', entry[2], simple_tree_context)]
-
+            data = [KinshipData('Word', 'ego', entry[2], simple_tree_context),
+                    KinshipData('Word', 'ego', entry[3], simple_tree_context)]
             # update the likelihood for each hypothesis on data
             L.append([ h.compute_likelihood(data) for h in hypotheses] )
 
             gl = 0
-            for j in xrange(3, len(entry)): # for each predictive response
+            for j in xrange(5, len(entry)): # for each predictive response
                 if entry[j] not in ('NA', 'NA\n'):
-                    dp = entry[j].strip('\n').split('_')
+                    NYes.append(   int(entry[j]) )
+                    NTrials.append(int(entry[4]))
 
-                    NYes.append(   int(dp[1]) )
-                    NTrials.append(int(dp[2]))
-
-                    Output.append( [ 1*(dp[0] in h.cached_set) for h in hypotheses])
+                    Output.append( [ 1*(order[j] in h.cached_set) for h in hypotheses])
 
                     gl += 1
 
             GroupLength.append(gl)
 
 print "# Loaded %s observed rows" % len(NYes)
+print "# Organized %s groups" % len(GroupLength)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get the rule count matrices
