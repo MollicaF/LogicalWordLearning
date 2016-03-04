@@ -13,6 +13,8 @@ crow_words = omaha_words
 sudanese_words = ['mother', 'father', 'brother', 'sister', 'f_bro', 'f_sis', 'm_bro', 'm_sis', 'fb_son', 'fb_dir', 'fs_son', 'fs_dir', 'mb_son', 'mb_dir', 'ms_son', 'ms_dir']
 iroquois_words = ['frat', 'sor', 'sor_m', 'frat_s', 'in_bro', 'in_sis', 'out_bro', 'out_sis']
 english_words = ['mother', 'father', 'brother', 'sister', 'uncle', 'aunt', 'grandma', 'grandpa', 'cousin']
+turkish_words = ['anne', 'baba', 'abi', 'abla', 'amca', 'hala', 'dayi', 'teyze', 'yenge', 'eniste', 'kuzen', 'anneanne', 'babaanne', 'dede']
+
 
 ####################################################################################
 #   Objects Sets
@@ -110,8 +112,8 @@ hawaiian.force_function('sor', lambda recurse_, C, X: female_(
 sudanese = KinshipLexicon(words=sudanese_words)
 sudanese.force_function('mother', lambda recurse_, C, X: female_(parents_of_(X, C)))
 sudanese.force_function('father', lambda recurse_, C, X: male_(parents_of_(X, C)))
-sudanese.force_function('brother', lambda recurse_, C, X: setdifference_(X, male_(children_of_(parents_of_(X, C)))))
-sudanese.force_function('sister', lambda recurse_, C, X: setdifference_(X, female_(children_of_(parents_of_(X, C)))))
+sudanese.force_function('brother', lambda recurse_, C, X: setdifference_(X, male_(children_of_(parents_of_(X, C), C))))
+sudanese.force_function('sister', lambda recurse_, C, X: setdifference_(X, female_(children_of_(parents_of_(X, C), C))))
 sudanese.force_function('f_bro', lambda recurse_, C, X: recurse_('brother', C, recurse_('father', C, X)))
 sudanese.force_function('f_sis', lambda recurse_, C, X: recurse_('sister', C, recurse_('father', C, X)))
 sudanese.force_function('m_bro', lambda recurse_, C, X: recurse_('brother', C, recurse_('mother', C, X)))
@@ -124,6 +126,26 @@ sudanese.force_function('mb_son', lambda recurse_, C, X: male_(children_of_(recu
 sudanese.force_function('mb_dir', lambda recurse_, C, X: female_(children_of_(recurse_('m_bro', C, X), C)))
 sudanese.force_function('ms_son', lambda recurse_, C, X: male_(children_of_(recurse_('m_sis', C, X), C)))
 sudanese.force_function('ms_dir', lambda recurse_, C, X: female_(children_of_(recurse_('m_sis', C, X), C)))
+
+# Turkish Lexicon
+turkish = KinshipLexicon(words=turkish_words)
+turkish.force_function('anne', lambda recurse_, C, X: female_(parents_of_(X, C)))
+turkish.force_function('baba', lambda recurse_, C, X: male_(parents_of_(X, C)))
+turkish.force_function('abi', lambda recurse_, C, X: setdifference_(X, male_(children_of_(parents_of_(X, C), C))))
+turkish.force_function('abla', lambda recurse_, C, X: setdifference_(X, female_(children_of_(parents_of_(X, C), C))))
+turkish.force_function('amca', lambda recurse_, C, X: recurse_('abi', C, recurse_('baba', C, X)))
+turkish.force_function('hala', lambda recurse_, C, X: recurse_('abla', C, recurse_('baba', C, X)))
+turkish.force_function('dayi', lambda recurse_, C, X: recurse_('abi', C, recurse_('anne', C, X)))
+turkish.force_function('teyze', lambda recurse_, C, X: recurse_('abla', C, recurse_('anne', C, X)))
+turkish.force_function('yenge', lambda recurse_, C, X: female_(spouses_of_(
+    setdifference_(children_of_(parents_of_(parents_of_(X,C),C),C), parents_of_(X,C)), C)))
+turkish.force_function('eniste', lambda recurse_, C, X: female_(spouses_of_(
+    setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C)))
+turkish.force_function('kuzen', lambda recurse_, C, X: children_of_(setdifference_(parents_of_(X, C),
+                                                            children_of_(parents_of_(parents_of_(X, C), C), C)),C))
+turkish.force_function('anneanne', lambda recurse_, C, X: female_(parents_of_(recurse_('anne', C, X), C)))
+turkish.force_function('babaanne', lambda recurse_, C, X: female_(parents_of_(recurse_('baba', C, X), C)))
+turkish.force_function('dede', lambda recurse_, C, X: male_(parents_of_(parents_of_(X, C), C)))
 
 #   Eskimo Lexicon
 

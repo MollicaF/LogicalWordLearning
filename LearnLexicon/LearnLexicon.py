@@ -14,7 +14,7 @@ from optparse import OptionParser
 ######################################################################################################
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
-parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='original')
+parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkish')
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="top-lexicons.pkl")
 
@@ -60,6 +60,17 @@ elif options.family == 'sudanese':
 
     target = sudanese
     target_words = sudanese_words
+    if options.Prior is None:
+        my_grammar = makeGrammar(four_gen_tree_objs,
+                                 nterms=grammar_set)
+    else:
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
+                                       nterms=grammar_set)
+elif options.family == 'turkish':
+    from Model.Givens import turkish, four_gen_tree_context, turkish_words, four_gen_tree_objs
+
+    target = turkish
+    target_words = turkish_words
     if options.Prior is None:
         my_grammar = makeGrammar(four_gen_tree_objs,
                                  nterms=grammar_set)

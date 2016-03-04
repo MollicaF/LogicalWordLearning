@@ -32,7 +32,7 @@ print "# Loaded hypotheses: ", len(hypotheses)
 
 #for h in hypotheses:
     #print h 
-#hypotheses = hypotheses[:10] # TODO: REMOVE THIS LINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+hypotheses = hypotheses[:10] # TODO: REMOVE THIS LINE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the human data
