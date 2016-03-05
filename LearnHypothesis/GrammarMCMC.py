@@ -1,3 +1,4 @@
+from LOTlib.MPI.MPI_map import MPI_map
 import pickle
 import numpy as np
 from numpy.random import normal
@@ -21,7 +22,7 @@ grammar = makeGrammar(simple_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Genera
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # map each concept to a hypothesis
-with open('Snowcharming.pkl', 'r') as f:
+with open('2dp_HypothesisSpace.pkl', 'r') as f:
     hypotheses = list(pickle.load(f))
 
 print "# Loaded hypotheses: ", len(hypotheses)
@@ -199,7 +200,6 @@ class GrammarMH(object):
             p_post = self.compute_posterior(params=prop)
             p = max(0, min(1, np.exp(p_post - self.posterior)))
             if p_post > -np.inf and flip(p):
-                if p == 1: print '# ', p_post, self.posterior, np.exp(p_post - self.posterior)
                 self.posterior = p_post
                 self.likelihood = self.compute_likelihood(prop)
                 self.prior = self.compute_prior(prop)
@@ -209,16 +209,25 @@ class GrammarMH(object):
             self.samples_yielded = self.samples_yielded + 1
             return self
 
+def run(a):
+    hyps = set()
+    e = GrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, steps=1000000)
+    for s, h in enumerate(break_ctrlc(e)):
+        if s % 1000:
+            hyps.add(h)
+            #print h.prior, h.likelihood, h.posterior, \
+            #    '\n\t', h.params['llt'], h.params['alpha'], h.params['beta'], \
+            #    '\n\t', h.params['x_SET'], '\n'
 
-hyps = set()
-e = GrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, steps=1000000)
-for s, h in enumerate(break_ctrlc(e)):
-    if s % 1000:
-        hyps.add(h)
-        print h.prior, h.likelihood, h.posterior, \
-            '\n\t', h.params['llt'], h.params['alpha'], h.params['beta'], \
-            '\n\t', h.params['x_SET'], '\n'
+    with open("Chains/Chain_"+str(a)+".pkl", 'w') as f:
+        pickle.dump(hyps, f)
 
-import pickle
+    return hyps
+
+argarray = map(lambda x: [x], np.arange(40))
+hypothesis_set = set()
+for fs in MPI_map(run, argarray, progress_bar=True):
+    hypothesis_set.update(fs)
+
 with open("DidItWork.pkl", 'w') as f:
-    pickle.dump(hyps, f)
+    pickle.dump(hypothesis_set, f)

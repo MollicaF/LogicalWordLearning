@@ -18,16 +18,16 @@ parser.add_option("--family", dest='family', type='string', help='What family tr
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="top-lexicons.pkl")
 
-parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
+parser.add_option("--steps", dest="steps", type="int", default=100000, help="Number of samples to run")
 parser.add_option("--top", dest="top_count", type="int", default=1000, help="Top number of hypotheses to store")
-parser.add_option("--chains", dest="chains", type="int", default=1,
+parser.add_option("--chains", dest="chains", type="int", default=6,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
 
 parser.add_option("--data", dest="data", type="int", default=-1,       help="Amount of data")
 parser.add_option("--dmin", dest="data_min", type="int", default=10,   help="Min data to run")
-parser.add_option("--dmax", dest="data_max", type="int", default=201, help="Max data to run")
+parser.add_option("--dmax", dest="data_max", type="int", default=251, help="Max data to run")
 parser.add_option("--dstep", dest="data_step", type="int", default=10, help="Step size for varying data")
 
 parser.add_option("--llt", dest="llt", type="float", default=1.0, help="Likelihood temperature")
