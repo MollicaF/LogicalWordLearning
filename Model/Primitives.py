@@ -1,4 +1,4 @@
-from LOTlib.Evaluation.Eval import primitive
+from LOTlib.Eval import primitive
 
 @primitive
 def parents_of_(x, context):
