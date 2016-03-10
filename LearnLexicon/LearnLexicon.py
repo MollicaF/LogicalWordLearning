@@ -4,7 +4,7 @@ from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.MPI.MPI_map import MPI_map, is_master_process
 from LOTlib.Inference.MetropolisHastings import MHSampler
 from LOTlib.Miscellaneous import display_option_summary, Infinity
-from LOTlib.MCMCSummary.TopN import TopN
+from LOTlib.TopN import TopN
 from LOTlib import break_ctrlc
 from Model import *
 from optparse import OptionParser
@@ -18,9 +18,9 @@ parser.add_option("--family", dest='family', type='string', help='What family tr
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="top-lexicons.pkl")
 
-parser.add_option("--steps", dest="steps", type="int", default=100000, help="Number of samples to run")
+parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
 parser.add_option("--top", dest="top_count", type="int", default=1000, help="Top number of hypotheses to store")
-parser.add_option("--chains", dest="chains", type="int", default=6,
+parser.add_option("--chains", dest="chains", type="int", default=1,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
