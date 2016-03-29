@@ -1,14 +1,16 @@
 import pickle
 from Model import *
 from optparse import OptionParser
-from Model.Givens import target, four_gen_tree_context
+from Model.Givens import pukapuka, four_gen_tree_context
+
+target = pukapuka
 
 #############################################################################################
 #    Option Parser
 #############################################################################################
 parser = OptionParser()
 parser.add_option("--read", dest="input_loc", type="string", help="Pickled results",
-                  default="top-lexicons.pkl")
+                  default="pukapuka300.pkl")
 parser.add_option("--pickle", dest="pkl_loc", type="string", help="Output a pkl", default=None)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="results.csv")

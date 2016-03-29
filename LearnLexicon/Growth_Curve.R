@@ -3,6 +3,7 @@ library(plyr)
 library(ggplot2)
 library(reshape)
 library(boot)
+library(gdata)
 
 data = read.csv('results.csv', header=F)
 colnames(data) = c('HypNo', 'Prior', 'Point_LL', 'Word', 'Correct', 'Proposed', 'Truth')
@@ -10,25 +11,42 @@ colnames(data) = c('HypNo', 'Prior', 'Point_LL', 'Word', 'Correct', 'Proposed', 
 data$ACC = 0
 data$ACC[data$Correct==data$Proposed & data$Proposed==data$Truth] = 1
 
-data$Word = mapvalues(data$Word, from = c(" 'siblings'", " 'grandparents'", " 'parents'", " 'cousins'", " 'uncles/aunts'", " 'spouses'", " 'children'"), to = c("Sibling", "Grandparent", "Parent", "Cousin", "Uncle/Aunt", "Spouse", "Child"))
+data$Precision = data$Correct / data$Proposed
+data$Precision[is.nan(data$Precision)] = 0
+data$Recall = data$Correct / data$Truth
+
+data$Word = trim(data$Word)
+#data$Word = mapvalues(data$Word, from = c(" 'siblings'", " 'grandparents'", " 'parents'", " 'cousins'", " 'uncles/aunts'", " 'spouses'", " 'children'"), to = c("Sibling", "Grandparent", "Parent", "Cousin", "Uncle/Aunt", "Spouse", "Child"))
 
 
-exp_prop <- function(df, amount) {
+exp_stats <- function(df, amount) {
 	posterior = df$Prior + amount*df$Point_LL
 	lse = logSumExp(posterior)
 	p = exp(posterior - lse)
-	return(sum(p*df$ACC))
+    data.frame(amount=amount, Accuracy=sum(p*df$ACC), Precision=sum(p*df$Precision), Recall=sum(p*df$Recall))
 }
 
-x = 1:400
-k = daply(data, .(Word), function(Z) return(c(Y=sapply(x, exp_prop, df=Z))))
-pd = data.frame(t(k))
-pd$X = x
-pd = melt(pd, id='X')
-colnames(pd) = c('X','Word','Y')
-pd$Y[pd$Y>0.999] = 0.999
-data = pd
+d = NULL
+for (amt in 1:400) {
+    k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt)})
+    d = rbind(d, k)
+}
 
+d=melt(d, id=c('Word', 'amount'))
+
+ggplot(d, aes(x=amount, value, linetype=variable, color=variable)) +
+	facet_grid(.~Word, scales='free_x') +
+    labs(y='Proportion', x='Number of Data Points') +
+	geom_line(size=1) +
+	theme_bw() +
+	scale_colour_brewer(palette="Set1") +
+	ylim(0,1) +
+    theme(legend.title=element_blank())
+
+ggsave('NRnego.eps', width=12, height=2)
+
+
+### Frequency Analysis
 data$prop = log(data$Y/(1-data$Y))
 data$prop[data$prop==Inf] = 1
 x = seq(0,2000,1)
@@ -51,17 +69,3 @@ y.grent = inv.logit(betas_grandpa[1]+betas_grandpa[2]*x)
 pd = data.frame(x=x, uncle=y.unc, parents=y.rent, sibling=y.bro, grandparents=y.grent)
 pot = melt(pd, id='x')
 g = ggplot(pot, aes(x=x,y=value, group=variable, color=variable)) + geom_line(size=1)
-
-
-
-
-
-g = ggplot(pd, aes(x=X, y=Y, group=Word, color=Word, label=Word)) +
-#	facet_grid(.~Word, scales='free_x') +
-    labs(y='Proportion Correct Hypotheses', x='Number of Data Points') +
-	geom_line(size=1) +
-	theme_bw(base_size=14) +
-#	theme(legend.position="none") +
-	scale_colour_brewer(palette="Set1") +
-	ylim(0,1)
-ggsave('~/Projects/LogicalWordLearning/LearnLexicon/growth.pdf', g, width=6, height=4)

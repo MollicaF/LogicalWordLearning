@@ -14,20 +14,21 @@ from optparse import OptionParser
 ######################################################################################################
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
-parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkish')
+parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='pukapuka')
 parser.add_option("--out", dest="out_path", type="string",
-                  help="Output file (a pickle of FiniteBestSet)", default="top-lexicons.pkl")
+                  help="Output file (a pickle of FiniteBestSet)", default="pukapuka300.pkl")
 
-parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
+parser.add_option("--steps", dest="steps", type="int", default=500000, help="Number of samples to run")
 parser.add_option("--top", dest="top_count", type="int", default=1000, help="Top number of hypotheses to store")
 parser.add_option("--chains", dest="chains", type="int", default=1,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
 
+
 parser.add_option("--data", dest="data", type="int", default=-1,       help="Amount of data")
 parser.add_option("--dmin", dest="data_min", type="int", default=10,   help="Min data to run")
-parser.add_option("--dmax", dest="data_max", type="int", default=251, help="Max data to run")
+parser.add_option("--dmax", dest="data_max", type="int", default=301, help="Max data to run")
 parser.add_option("--dstep", dest="data_step", type="int", default=10, help="Step size for varying data")
 
 parser.add_option("--llt", dest="llt", type="float", default=1.0, help="Likelihood temperature")
@@ -43,12 +44,23 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity']
+grammar_set = ['Tree', 'Set', 'Gender'] #, 'Generation', 'Ancestry', 'Paternity']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
     target = hawaiian
     target_words = hawaiian_words
+    if options.Prior is None:
+        my_grammar = makeGrammar(four_gen_tree_objs,
+                                 nterms=grammar_set)
+    else:
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
+                                       nterms=grammar_set)
+elif options.family == 'pukapuka':
+    from Model.Givens import pukapuka, four_gen_tree_context, pukapuka_words, four_gen_tree_objs
+
+    target = pukapuka
+    target_words = pukapuka_words
     if options.Prior is None:
         my_grammar = makeGrammar(four_gen_tree_objs,
                                  nterms=grammar_set)
@@ -139,7 +151,7 @@ else:
 ######################################################################################################
 def run(data_amount):
     print "Starting chain on %s data points"%data_amount
-    data = makeLexiconData(target, four_gen_tree_context, n=data_amount, alpha=options.alpha)
+    data = makeLexiconData(target, four_gen_tree_context, n=data_amount, alpha=options.alpha, verbose=True)
 
     h0 = KinshipLexicon(alpha=options.alpha)
     for w in target_words:

@@ -14,7 +14,7 @@ sudanese_words = ['mother', 'father', 'brother', 'sister', 'f_bro', 'f_sis', 'm_
 iroquois_words = ['frat', 'sor', 'sor_m', 'frat_s', 'in_bro', 'in_sis', 'out_bro', 'out_sis']
 english_words = ['mother', 'father', 'brother', 'sister', 'uncle', 'aunt', 'grandma', 'grandpa', 'cousin']
 turkish_words = ['anne', 'baba', 'abi', 'abla', 'amca', 'hala', 'dayi', 'teyze', 'yenge', 'eniste', 'kuzen', 'anneanne', 'babaanne', 'dede']
-
+pukapuka_words = ['kainga', 'taina', 'matua-tane', 'matua-wawine', 'tapuna-tane', 'tapuna-wawine']
 
 ####################################################################################
 #   Objects Sets
@@ -96,7 +96,6 @@ brother.force_function('brother', lambda recurse_, C, X: male_(setdifference_(ch
 grandma = KinshipLexicon(words=['grandma'])
 grandma.force_function('grandma', lambda recurse_, C, X: female_(parents_of_(parents_of_(X, C), C)))
 
-
 #   Hawaiian Lexicon
 
 hawaiian = KinshipLexicon(words=hawaiian_words)
@@ -106,6 +105,31 @@ hawaiian.force_function('frat', lambda recurse_, C, X: male_(
     children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
 hawaiian.force_function('sor', lambda recurse_, C, X: female_(
     children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
+
+#   Pukapuka Lexicon
+
+pukapuka = KinshipLexicon(words=pukapuka_words)
+#Cross-sex my gen
+pukapuka.force_function('kainga', lambda recurse_, C, X: if_(issubset_(X, male_(complement_(X, C))),
+                                                        female_(children_of_(parents_of_(parents_of_(X, C), C), C)),
+                                                        male_(children_of_(parents_of_(parents_of_(X, C), C), C))))
+#Same-sex my gen
+pukapuka.force_function('taina', lambda recurse_, C, X: if_(issubset_(X, male_(complement_(X, C))),
+                                                        male_(children_of_(parents_of_(parents_of_(X, C), C), C)),
+                                                        female_(children_of_(parents_of_(parents_of_(X, C), C), C))))
+# Father-Uncle
+pukapuka.force_function('matua-tane', lambda recurse_, C, X: male_(
+    children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
+# Mother-Aunt
+pukapuka.force_function('matua-wawine', lambda recurse_, C, X: female_(
+    children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
+# Grandpa-GreatUncle
+pukapuka.force_function('tupuna-tane', lambda recurse_, C, X: male_(
+    children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
+# Granma-GreatAunt
+pukapuka.force_function('tupuan-wawine', lambda recurse_, C, X: male_(
+    children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)))
+
 
 #   Sudanese Lexicon
 

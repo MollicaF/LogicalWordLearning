@@ -2,7 +2,7 @@
     Utilities for kinship
 """
 import re
-
+import numpy as np
 
 def self_check(g):
     for e in g.keys():

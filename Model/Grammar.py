@@ -25,6 +25,9 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
         grammar.add_rule('SET', 'intersection_', ['SET', 'SET'], 1.0)
         grammar.add_rule('SET', 'setdifference_', ['SET', 'SET'], 1.0)
 
+        grammar.add_rule('BOOL', 'issubset_', ['SET', 'SET'], 1.0)
+        grammar.add_rule('SET', 'if_', ['BOOL', 'SET', 'SET'], 1.0)
+
     if 'Gender' in nterms:
         # GENDER
         grammar.add_rule('SET', 'female_', ['SET'], 1.0 / 2)
@@ -177,7 +180,7 @@ def makeBiasedGrammar(objects, nterms=['Tree', 'Set', 'Gender', 'Generation', 'A
 if __name__ == "__main__":
 
     my_grammar = makeGrammar(['Mira','Snow','charming','rump','neal','baelfire','Emma','Regina','henry','Maryann','ego'],
-                             compositional=False, terms=['X','objects'], nterms=['English'])
+                             compositional=False, terms=['X','objects'])
 
     for _ in xrange(10):
         print my_grammar.generate()
