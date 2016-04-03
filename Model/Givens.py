@@ -14,7 +14,7 @@ sudanese_words = ['mother', 'father', 'brother', 'sister', 'f_bro', 'f_sis', 'm_
 iroquois_words = ['frat', 'sor', 'sor_m', 'frat_s', 'in_bro', 'in_sis', 'out_bro', 'out_sis']
 english_words = ['mother', 'father', 'brother', 'sister', 'uncle', 'aunt', 'grandma', 'grandpa', 'cousin']
 turkish_words = ['anne', 'baba', 'abi', 'abla', 'amca', 'hala', 'dayi', 'teyze', 'yenge', 'eniste', 'kuzen', 'anneanne', 'babaanne', 'dede']
-pukapuka_words = ['kainga', 'taina', 'matua-tane', 'matua-wawine', 'tapuna-tane', 'tapuna-wawine']
+pukapuka_words = ['kainga', 'taina', 'matua-tane', 'matua-wawine', 'tupuna-tane', 'tupuna-wawine']
 
 ####################################################################################
 #   Objects Sets
