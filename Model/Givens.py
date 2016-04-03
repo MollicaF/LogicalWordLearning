@@ -111,12 +111,12 @@ hawaiian.force_function('sor', lambda recurse_, C, X: female_(
 pukapuka = KinshipLexicon(words=pukapuka_words)
 #Cross-sex my gen
 pukapuka.force_function('kainga', lambda recurse_, C, X: if_(issubset_(X, male_(all_(C))),
-                                    female_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C)),
-                                    male_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C))))
+                        female_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C)),
+                        male_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C))))
 #Same-sex my gen
 pukapuka.force_function('taina', lambda recurse_, C, X: if_(issubset_(X, male_(all_(C))),
-                                    male_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)),
-                                    female_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C))))
+                       setdifference_(male_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)), X),
+                       setdifference_(female_(children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)), X)))
 # Father-Uncle
 pukapuka.force_function('matua-tane', lambda recurse_, C, X: male_(
     children_of_(parents_of_(parents_of_(X, C), C), C)))
