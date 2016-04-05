@@ -90,6 +90,16 @@ def female_(x):
     return do
 
 @primitive
+def samegender_(x, c):
+    men = male_(all_(c))
+    if len(x) != 1:
+        return set()
+    elif x.issubset(men):
+        return men
+    else:
+        return female_(all_(c))
+
+@primitive
 def brothers_(X, C):
     return male_(setdifference_(children_of_(parents_of_(X, C), C), X))
 
@@ -145,12 +155,18 @@ def paternal_(X, C):
 
 @primitive
 def generation0_(X, C):
-    return complement_(children_of_(union_(complement_(X, C), X), C), C)
+    if len(X) != 1:
+        return set()
+    return children_of_(children_of_(parents_of_(parents_of_(X, C), C), C), C)
 
 @primitive
 def generation1_(X, C):
-    return children_of_(complement_(children_of_(union_(complement_(X, C), X), C), C), C)
+    if len(X) != 1:
+        return set()
+    return parents_of_(generation0_(X, C), C)
 
 @primitive
 def generation2_(X, C):
-    return children_of_(children_of_(complement_(children_of_(union_(complement_(X, C), X), C), C), C), C)
+    if len(X) != 1:
+        return set()
+    return parents_of_(generation1_(X, C), C)

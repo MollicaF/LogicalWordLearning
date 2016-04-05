@@ -25,13 +25,11 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
         grammar.add_rule('SET', 'intersection_', ['SET', 'SET'], 1.0)
         grammar.add_rule('SET', 'setdifference_', ['SET', 'SET'], 1.0)
 
-        grammar.add_rule('BOOL', 'issubset_', ['SET', 'SET'], 1.0)
-        grammar.add_rule('SET', 'if_', ['BOOL', 'SET', 'SET'], 1.0)
-
     if 'Gender' in nterms:
         # GENDER
         grammar.add_rule('SET', 'female_', ['SET'], 1.0 / 2)
         grammar.add_rule('SET', 'male_', ['SET'], 1.0 / 2)
+        grammar.add_rule('SET', 'samegender_', ['SET', 'C'], 1.0)
 
     if 'Generation' in nterms:
         # GENERATION
