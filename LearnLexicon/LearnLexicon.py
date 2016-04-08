@@ -16,11 +16,11 @@ parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
 parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='pukapuka')
 parser.add_option("--out", dest="out_path", type="string",
-                  help="Output file (a pickle of FiniteBestSet)", default="pukapuka300.pkl")
+                  help="Output file (a pickle of FiniteBestSet)", default="pukapukaHyps.pkl")
 
-parser.add_option("--steps", dest="steps", type="int", default=500000, help="Number of samples to run")
-parser.add_option("--top", dest="top_count", type="int", default=1000, help="Top number of hypotheses to store")
-parser.add_option("--chains", dest="chains", type="int", default=7,
+parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
+parser.add_option("--top", dest="top_count", type="int", default=100, help="Top number of hypotheses to store")
+parser.add_option("--chains", dest="chains", type="int", default=16,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
