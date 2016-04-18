@@ -14,6 +14,7 @@ from optparse import OptionParser
 ######################################################################################################
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
+parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
 parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkish')
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="turkish.pkl")
@@ -51,77 +52,77 @@ if options.family == 'hawaiian':
     target = hawaiian
     target_words = hawaiian_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=hawaiian_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=hawaiian_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'pukapuka':
     from Model.Givens import pukapuka, four_gen_tree_context, pukapuka_words, four_gen_tree_objs
 
     target = pukapuka
     target_words = pukapuka_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=pukapuka_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=pukapuka_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'sudanese':
     from Model.Givens import sudanese, four_gen_tree_context, sudanese_words, four_gen_tree_objs
 
     target = sudanese
     target_words = sudanese_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=sudanese_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=sudanese_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'turkish':
     from Model.Givens import turkish, four_gen_tree_context, turkish_words, four_gen_tree_objs
 
     target = turkish
     target_words = turkish_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=turkish_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'eskimo':
     from Model.Givens import eskimo, four_gen_tree_context, eskimo_words, four_gen_tree_objs
 
     target = eskimo
     target_words = eskimo_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=eskimo_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=eskimo_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'iroquois':
     from Model.Givens import iroquois, four_gen_tree_context, iroquois_words, four_gen_tree_objs
 
     target = iroquois
     target_words = iroquois_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=iroquois_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=iroquois_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'omaha':
     from Model.Givens import omaha, four_gen_tree_context, omaha_words, four_gen_tree_objs
 
     target = omaha
     target_words = omaha_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=omaha_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=omaha_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 
 elif options.family == 'crow':
     from Model.Givens import crow, four_gen_tree_context, crow_words, four_gen_tree_objs
@@ -129,22 +130,22 @@ elif options.family == 'crow':
     target = crow
     target_words = crow_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=crow_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=crow_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 
 else:
     from Model.Givens import target, four_gen_tree_context, genderless_english_words, four_gen_tree_objs
 
     target_words = genderless_english_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs,
-                                 nterms=grammar_set)
+        my_grammar = makeGrammar(four_gen_tree_objs, words=genderless_english_words,
+                                 nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs,
-                                       nterms=grammar_set)
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=genderless_english_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 
 ######################################################################################################
 #   Chain Function
