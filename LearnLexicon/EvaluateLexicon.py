@@ -52,7 +52,7 @@ def assess_hyp(hypothesis, target_lexicon, context):
 #############################################################################################
 
 print "Making data set of size %s . . ."%options.data_size
-huge_data = makeLexiconData(target, four_gen_tree_context, n=options.data_size, alpha=options.alpha)
+huge_data = makeLexiconData(target, four_gen_tree_context, n=options.data_size, alpha=options.alpha, verbose=True)
 
 print "Loading hypothesis space . . ."
 hypothesis_space = set()
