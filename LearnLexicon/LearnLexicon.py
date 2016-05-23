@@ -79,16 +79,16 @@ elif options.family == 'sudanese':
     else:
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=sudanese_words,
                                        nterms=grammar_set, recursive=options.recurse)
-elif options.family == 'turkish':
-    from Model.Givens import turkish, four_gen_tree_context, turkish_words, four_gen_tree_objs
+elif options.family == 'turkishA':
+    from Model.Givens import turkishA, four_gen_tree_context, turkish_wordsA, four_gen_tree_objs
 
-    target = turkish
-    target_words = turkish_words
+    target = turkishA
+    target_words = turkish_wordsA
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
+        my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_wordsA,
                                  nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=turkish_words,
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=turkish_wordsA,
                                        nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'eskimo':
     from Model.Givens import eskimo, four_gen_tree_context, eskimo_words, four_gen_tree_objs
@@ -177,7 +177,7 @@ if is_master_process():
     display_option_summary(options)
 
 seen = set()
-for fs in MPI_map(run, numpy.random.permutation(argarray), progress_bar=False) :
+for fs in break_ctrlc(MPI_map(run, numpy.random.permutation(argarray), progress_bar=False)) :
     for h in fs.get_all():
         if h not in seen:
             seen.add(h)
