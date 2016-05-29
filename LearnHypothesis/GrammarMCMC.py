@@ -4,7 +4,8 @@ import pickle
 import numpy as np
 from Model import *
 from optparse import OptionParser
-from Model.GrammarMH import GrammarMH
+from Model.GrammarMH2 import AlphaBetaGrammarMH
+from LOTlib.Inference.MetropolisHastings import MHSampler
 np.set_printoptions(threshold=np.inf)
 
 ######################################################################################################
@@ -19,7 +20,7 @@ parser.add_option("--out", dest="out_path", type="string", help="Output file (a 
                   default="DidItWork.pkl")
 
 parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
-parser.add_option("--thin", dest="thin", type="int", default=100, help="Number of steps between saved samples")
+parser.add_option("--thin", dest="thin", type="int", default=1000, help="Number of steps between saved samples")
 parser.add_option("--chains", dest="chains", type="int", default=1, help="Number of chains to run")
 
 (options, args) = parser.parse_args()
@@ -98,13 +99,12 @@ print "# Computed counts for each hypothesis & nonterminal"
 
 def run(a):
     hyps = set()
-    e = GrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, steps=options.steps)
-    for s, h in enumerate(e):
+    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output)
+    mhs = MHSampler(h0, [], options.steps)
+    for s, h in enumerate(mhs):
         if s % options.thin == 0:
             hyps.add(h)
-            print float(h.acceptance_count) / h.proposal_count
-            print h.prior, h.likelihood, h.posterior, \
-                '\n\t', h.params['llt'], '\n\t', h.params['x_SET'], '\n'
+            print h.prior, h.likelihood, h.posterior, '\n', h.value
     with open("Chains/Chain_"+str(a)+".pkl", 'w') as f:
         pickle.dump(hyps, f)
     return hyps

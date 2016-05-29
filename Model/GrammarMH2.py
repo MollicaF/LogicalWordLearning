@@ -1,7 +1,7 @@
+from LOTlib.Hypotheses.Hypothesis import *
 import numpy as np
 from scipy.misc import logsumexp
 from scipy.stats import dirichlet, binom
-from Model import *
 
 class AlphaBetaGrammarMH(Hypothesis):
     def __init__(self, Counts, Hypotheses, L, GroupLength, prior_offset, Nyes, Ntrials, ModelResponse, value=None,  scale=600):
@@ -26,8 +26,10 @@ class AlphaBetaGrammarMH(Hypothesis):
 
         # the dirichlet prior on parameters
         self.value_prior = { nt: np.ones(self.nrules[nt]) for nt in self.nts }
+        self.set_value(value)
+        Hypothesis.__init__(self)
 
-        # store the parameters in a hash from nonterminal to vector of probabilities
+    def set_value(self, value):
         if value is None:
             self.value = dict()
             for nt in self.nts:
@@ -55,7 +57,7 @@ class AlphaBetaGrammarMH(Hypothesis):
                 # ps = (1 - params['alpha']) * params['beta'] + params['alpha'] * np.dot(w, self.acc[pos])
                 ps = np.dot(posteriors, self.ModelResponse[pos]) # model probabiltiy of saying yes # TODO: Check matrix multiply
 
-                likelihood += binom.logpdf(self.Nyes[pos], self.Ntrials[pos], ps)
+                likelihood += binom.logpmf(self.Nyes[pos], self.Ntrials[pos], ps)
                 pos = pos + 1
 
         return likelihood
@@ -76,7 +78,11 @@ class AlphaBetaGrammarMH(Hypothesis):
         # change value
         newvalue = dict()
         for nt in self.nts:
-            newvalue[nt] = dirichlet.rvs(self.value[nt] * self.scale)*(1.0-epsilon) + epsilon/2.0
+            a = dirichlet.rvs(self.value[nt] * self.scale)[0] + epsilon
+            newvalue[nt] = a / np.sum(a)
+            #newvalue[nt] = dirichlet.rvs(self.value[nt] * self.scale)[0]*(1.0-epsilon) + epsilon/2.0
+            # This doesn't guarantee a simplex
+            print newvalue[nt].shape, self.value[nt].shape
             fb += dirichlet.logpdf(newvalue[nt],self.value[nt]) - dirichlet.logpdf(self.value[nt],newvalue[nt])
 
         # make a new proposal. DON'T copy the matrices, but make a new value
