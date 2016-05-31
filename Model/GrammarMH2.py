@@ -37,7 +37,7 @@ class AlphaBetaGrammarMH(Hypothesis):
         else:
             self.value = value
 
-    def compute_likelihood(self, data):
+    def compute_likelihood(self, data, **kwargs):
         # The likelihood of the human data
         assert len(data) == 0
 
@@ -60,13 +60,15 @@ class AlphaBetaGrammarMH(Hypothesis):
                 likelihood += binom.logpmf(self.Nyes[pos], self.Ntrials[pos], ps)
                 pos = pos + 1
 
+        self.likelihood = likelihood
         return likelihood
 
     def compute_prior(self):
         # prior = prior + norm.logcdf(params['llt'], 0.3, 0.003)
         # prior = prior + uniform.logcdf(params['alpha'], 0, 1)
         # prior = prior + uniform.logcdf(params['beta'], 0, 1)
-        return sum([ np.sum(dirichlet.logpdf(self.value[nt], self.value_prior[nt])) for nt in self.nts ])
+        self.prior = -1*sum([np.sum(dirichlet.logpdf(self.value[nt], self.value_prior[nt])) for nt in self.nts])
+        return self.prior
 
 
     def propose(self, epsilon=1e-5):
@@ -82,7 +84,6 @@ class AlphaBetaGrammarMH(Hypothesis):
             newvalue[nt] = a / np.sum(a)
             #newvalue[nt] = dirichlet.rvs(self.value[nt] * self.scale)[0]*(1.0-epsilon) + epsilon/2.0
             # This doesn't guarantee a simplex
-            print newvalue[nt].shape, self.value[nt].shape
             fb += dirichlet.logpdf(newvalue[nt],self.value[nt]) - dirichlet.logpdf(self.value[nt],newvalue[nt])
 
         # make a new proposal. DON'T copy the matrices, but make a new value

@@ -5,7 +5,7 @@ import numpy as np
 from Model import *
 from optparse import OptionParser
 from Model.GrammarMH2 import AlphaBetaGrammarMH
-from LOTlib.Inference.MetropolisHastings import MHSampler
+from LOTlib.Inference.Samplers.MetropolisHastings import MHSampler
 np.set_printoptions(threshold=np.inf)
 
 ######################################################################################################
@@ -18,9 +18,10 @@ parser.add_option("--space", dest='space_loc', type='string', help="Hypothesis S
                   default='Snowcharming.pkl')
 parser.add_option("--out", dest="out_path", type="string", help="Output file (a pickle of FiniteBestSet)",
                   default="DidItWork.pkl")
+parser.add_option("--scale", dest="scale", type="float", help="Scale for the dirichlet proposal.", default=600.)
 
 parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
-parser.add_option("--thin", dest="thin", type="int", default=1000, help="Number of steps between saved samples")
+parser.add_option("--thin", dest="thin", type="int", default=100, help="Number of steps between saved samples")
 parser.add_option("--chains", dest="chains", type="int", default=1, help="Number of chains to run")
 
 (options, args) = parser.parse_args()
@@ -99,12 +100,13 @@ print "# Computed counts for each hypothesis & nonterminal"
 
 def run(a):
     hyps = set()
-    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output)
+    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, scale=options.scale)
     mhs = MHSampler(h0, [], options.steps)
     for s, h in enumerate(mhs):
         if s % options.thin == 0:
-            hyps.add(h)
-            print h.prior, h.likelihood, h.posterior, '\n', h.value
+            a = str(mhs.acceptance_ratio()) + ',' + str(h.prior) + ',' + str(h.likelihood) + ',' + ','.join([str(x) for x in h.value['SET']])
+            print a
+            hyps.add(a)
     with open("Chains/Chain_"+str(a)+".pkl", 'w') as f:
         pickle.dump(hyps, f)
     return hyps
