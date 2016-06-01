@@ -1,9 +1,9 @@
 import pickle
 from Model import *
 from optparse import OptionParser
-from Model.Givens import turkish, four_gen_tree_context
+from Model.Givens import turkishA, four_gen_tree_context
 
-target = turkish
+target = turkishA
 
 #############################################################################################
 #    Option Parser
