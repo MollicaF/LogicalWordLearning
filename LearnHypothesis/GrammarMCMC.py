@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 from Model import *
 from optparse import OptionParser
-from Model.GrammarMH2 import AlphaBetaGrammarMH
+from Model.AlphaBetaGrammarMH import AlphaBetaGrammarMH
 from LOTlib.Inference.Samplers.MetropolisHastings import MHSampler
 np.set_printoptions(threshold=np.inf)
 
@@ -100,12 +100,12 @@ print "# Computed counts for each hypothesis & nonterminal"
 
 def run(a):
     hyps = set()
-    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, scale=options.scale)
+    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, scale=options.scale, step_size=0.5)
     mhs = MHSampler(h0, [], options.steps)
     for s, h in enumerate(mhs):
         if s % options.thin == 0:
             a = str(mhs.acceptance_ratio()) + ',' + str(h.prior) + ',' + str(h.likelihood) + ',' + ','.join([str(x) for x in h.value['SET']])
-            print a
+            print a, '\n', h.alpha, h.beta, h.llt
             hyps.add(a)
     with open("Chains/Chain_"+str(a)+".pkl", 'w') as f:
         pickle.dump(hyps, f)

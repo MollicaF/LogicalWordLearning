@@ -1,19 +1,22 @@
 import numpy as np
+from random import random
+from copy import copy
 from scipy.misc import logsumexp
-from scipy.stats import dirichlet, binom
-from Model import *
+from scipy.stats import dirichlet, binom, gamma, norm, beta
+from LOTlib.Hypotheses.Hypothesis import Hypothesis
+from LOTlib.Miscellaneous import sample1
 
 class AlphaBetaGrammarMH(Hypothesis):
 
     # Priors on parameters
     BETA_PRIOR = np.array([1.,1.])
-    ALPHA_PRIOR = np.array([1., 1.])
+    ALPHA_PRIOR = np.array([100., 100.])
     LLT_PRIOR = np.array([1., 1.])
 
     P_PROPOSE_VALUE = 0.5 # what proportion of the time do we propose to value?
 
     def __init__(self, Counts, Hypotheses, L, GroupLength, prior_offset, Nyes, Ntrials, ModelResponse, alpha=None, \
-                 beta=None, llt=None, value=None,  scale=600):
+                 beta=None, llt=None, value=None,  scale=600, step_size=0.01):
         """
             Counts - nonterminal -> #h x #rules counts
             Hypotheses - #h
@@ -35,7 +38,10 @@ class AlphaBetaGrammarMH(Hypothesis):
 
         # the dirichlet prior on parameters
         self.value_prior = { nt: np.ones(self.nrules[nt]) for nt in self.nts }
+        self.set_value(value)
+        Hypothesis.__init__(self)
 
+    def set_value(self, value):
         # store the parameters in a hash from nonterminal to vector of probabilities
         if value is None:
             self.value = dict()
@@ -45,13 +51,14 @@ class AlphaBetaGrammarMH(Hypothesis):
             self.value = value
 
         if self.beta is None:
-            self.beta = dirichlet.rvs(AlphaBetaGrammarMH.BETA_PRIOR)[0]
+            self.beta = dirichlet.rvs(AlphaBetaGrammarMH.BETA_PRIOR)[0][0]
         if self.alpha is None:
-            self.alpha = dirichlet.rvs(AlphaBetaGrammarMH.ALPHS_PRIOR)[0]
+            self.alpha = dirichlet.rvs(AlphaBetaGrammarMH.ALPHA_PRIOR)[0][0]
         if self.llt is None:
-            self.llt = gamma.rvs(*AlphaBetaGrammarMH.LLT_PRIOR, size=1) # TODO: Check, parameters, rvs, size
+            self.llt = gamma.rvs(*AlphaBetaGrammarMH.LLT_PRIOR, size=1)[0] # TODO: Check, parameters, rvs, size
 
-    def compute_likelihood(self, data):
+
+    def compute_likelihood(self, data, **kwargs):
         # The likelihood of the human data
         assert len(data) == 0
 
@@ -71,23 +78,24 @@ class AlphaBetaGrammarMH(Hypothesis):
                 ps = (1 - self.alpha) * self.beta + self.alpha * np.dot(posteriors, self.ModelResponse[pos])
                 # ps = np.dot(posteriors, self.ModelResponse[pos]) # model probabiltiy of saying yes # TODO: Check matrix multiply
 
-                likelihood += binom.logpdf(self.Nyes[pos], self.Ntrials[pos], ps)
+                likelihood += binom.logpmf(self.Nyes[pos], self.Ntrials[pos], ps)
                 pos = pos + 1
 
+        self.likelihood = likelihood
         return likelihood
 
     def compute_prior(self):
-        return sum([ np.sum(dirichlet.logpdf(self.value[nt], self.value_prior[nt])) for nt in self.nts ]) + \
-            dirichlet.logpdf(np.array([self.beta, 1.-self.beta]), AlphaBetaGrammarMH.BETA_PRIOR) + \
-           dirichlet.logpdf(np.array([self.alpha, 1.-self.alpha]), AlphaBetaGrammarMH.ALPHA_PRIOR) + \
-           gamma.logpdf(self.llt, *AlphaBetaGrammarMH.LLT_PRIOR) # TODO: Check ordering of parameters
+        if self.alpha >= 1 or self.alpha <= 0 or self.beta >= 1 or self.beta <= 0:
+            self.prior = -np.inf
+            return self.prior
+        else:
+            self.prior = -1*(sum([ np.sum(dirichlet.logpdf(self.value[nt], self.value_prior[nt])) for nt in self.nts ]) + \
+                                #dirichlet.logpdf(np.array([self.beta, 1.-self.beta]), AlphaBetaGrammarMH.BETA_PRIOR) + \
+                                #dirichlet.logpdf(np.array([self.alpha, 1.-self.alpha]), AlphaBetaGrammarMH.ALPHA_PRIOR) + \
+                                gamma.logpdf(self.llt, *AlphaBetaGrammarMH.LLT_PRIOR)) # TODO: Check ordering of parameters
+            return self.prior
 
-            # prior = prior + norm.logcdf(params['llt'], 0.3, 0.003)
-        # prior = prior + uniform.logcdf(params['alpha'], 0, 1)
-        # prior = prior + uniform.logcdf(params['beta'], 0, 1)
-
-
-    def propose(self, epsilon=1e-5):
+    def propose(self, epsilon=1e-10):
         # should return is f-b, proposal
 
         if random() < AlphaBetaGrammarMH.P_PROPOSE_VALUE:
@@ -98,14 +106,36 @@ class AlphaBetaGrammarMH(Hypothesis):
             # change value
             newvalue = dict()
             for nt in self.nts:
-                newvalue[nt] = dirichlet.rvs(self.value[nt] * self.scale)*(1.0-epsilon) + epsilon/2.0
+                inx = sample1(range(0, self.nrules[nt]))
+                a = copy(self.value[nt])
+                a[inx] = beta.rvs(self.value[nt][inx]*100, 100-self.value[nt][inx]*100) + epsilon
+
+                #a = dirichlet.rvs(self.value[nt] * self.scale)[0] + epsilon
+                newvalue[nt] = a / np.sum(a)
                 fb += dirichlet.logpdf(newvalue[nt],self.value[nt]) - dirichlet.logpdf(self.value[nt],newvalue[nt])
 
             # make a new proposal. DON'T copy the matrices, but make a new value
-            prop = AlphaBetaGrammarMH(self.Counts, self.Hypotheses, self.L, self.GroupLength, self.prior_offset, self.Nyes, \
-                                      self.Ntrials, self.ModelResponse, value=newvalue, scale=600)
+            prop = AlphaBetaGrammarMH(self.Counts, self.Hypotheses, self.L, self.GroupLength, self.prior_offset, self.Nyes,
+                                      self.Ntrials, self.ModelResponse, value=newvalue, scale=self.scale, alpha=self.alpha,
+                                      beta=self.beta, llt=self.llt)
 
             return prop, fb
 
         else:
-            # propose to all of them
+
+            fb = 0.0
+
+            newalpha = norm.rvs(loc=self.alpha, scale=self.step_size)
+            fb += norm.logpdf(newalpha, self.alpha, self.step_size) - norm.logpdf(self.alpha, newalpha, self.step_size)
+
+            newbeta = norm.rvs(loc=self.beta, scale=self.step_size) - 1e-5
+            fb += norm.logpdf(newbeta, self.beta, self.step_size) - norm.logpdf(self.beta, newbeta, self.step_size)
+
+            newllt = norm.rvs(loc=self.llt, scale=self.step_size)
+            fb += norm.logpdf(newllt, self.llt, self.step_size) - norm.logpdf(self.llt, newllt, self.step_size)
+
+            prop = AlphaBetaGrammarMH(self.Counts, self.Hypotheses, self.L, self.GroupLength, self.prior_offset, self.Nyes,
+                                      self.Ntrials, self.ModelResponse, value=self.value, scale=self.scale, alpha=newalpha,
+                                      beta=newbeta, llt=newllt)
+
+            return prop, fb

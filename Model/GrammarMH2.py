@@ -88,6 +88,6 @@ class AlphaBetaGrammarMH(Hypothesis):
 
         # make a new proposal. DON'T copy the matrices, but make a new value
         prop = AlphaBetaGrammarMH(self.Counts, self.Hypotheses, self.L, self.GroupLength, self.prior_offset, self.Nyes, \
-                                  self.Ntrials, self.ModelResponse, value=newvalue, scale=600)
+                                  self.Ntrials, self.ModelResponse, value=newvalue, scale=self.scale)
 
         return prop, fb

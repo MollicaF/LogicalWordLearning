@@ -181,7 +181,7 @@ turkish.force_function('kuzen', lambda recurse_, C, X: children_of_(
         children_of_(parents_of_(parents_of_(X, C), C), C),
         parents_of_(X, C)), C))
 
-turkish_wordsA = ['anne', 'baba', 'amca', 'hala', 'dayi', 'teyze', 'yenge', 'eniste']
+turkish_wordsA = ['anne', 'baba', 'amca', 'hala', 'dayi', 'teyze', 'yenge', 'eniste', 'abi', 'abla']
 turkishA = KinshipLexicon(words=turkish_wordsA)
 turkishA.force_function('anne', lambda recurse_, C, X: female_(parents_of_(X, C)))
 turkishA.force_function('baba', lambda recurse_, C, X: male_(parents_of_(X, C)))
@@ -193,6 +193,8 @@ turkishA.force_function('yenge', lambda recurse_, C, X: female_(spouses_of_(
     setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C)))
 turkishA.force_function('eniste', lambda recurse_, C, X: male_(spouses_of_(
     setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C)))
+turkishA.force_function('abi', lambda recurse_, C, X: setdifference_(male_(children_of_(parents_of_(X, C), C)), X))
+turkishA.force_function('abla', lambda recurse_, C, X: setdifference_(female_(children_of_(parents_of_(X, C), C)), X))
 
 #   Eskimo Lexicon
 
