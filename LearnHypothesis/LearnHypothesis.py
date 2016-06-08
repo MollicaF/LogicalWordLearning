@@ -80,15 +80,14 @@ data = [list(pt) for pt in combinations([KinshipData('Word','ego','Snow', simple
 
 argarray = map(lambda x: [x], data * options.CHAINS)
 
-if __name__ == "__main__":
 
-    if is_master_process():
-        display_option_summary(options)
+if is_master_process():
+    display_option_summary(options)
 
-    hypothesis_space = set()
-    for s, h in MPI_map(run, argarray, progress_bar=True):
-        hypothesis_space.update(h)
-        print "Done with " + s
+hypothesis_space = set()
+for s, h in MPI_map(run, argarray, progress_bar=True):
+    hypothesis_space.update(h)
+    print "Done with " + s
 
-    with open(options.OUT_PATH + str(options.k) + "dp_HypothesisSpace.pkl", 'w') as f:
-        pickle.dump(hypothesis_space, f)
+with open(options.OUT_PATH + str(options.k) + "dp_HypothesisSpace.pkl", 'w') as f:
+    pickle.dump(hypothesis_space, f)

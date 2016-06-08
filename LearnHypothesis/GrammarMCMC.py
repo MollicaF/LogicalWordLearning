@@ -1,4 +1,7 @@
-from LearnHypothesis import *
+import pickle
+from LOTlib import break_ctrlc
+from Model import *
+from optparse import OptionParser
 import numpy
 ######################################################################################################
 #   Option Parser
@@ -10,7 +13,7 @@ parser.add_option("--space", dest='space_loc', type='string', help="Hypothesis S
                   default='2dp_HypothesisSpace.pkl')
 parser.add_option("--out", dest="out_path", type="string", help="Output file (a csv of samples)",
                   default="FullSpace")
-parser.add_option("--viz", dest='viz', action='store_true', help="Make Vizualization Files?")
+parser.add_option("--viz", dest="viz", action="store_true", help="Make Vizualization Files?")
 
 
 parser.add_option("--samples", dest="samples", type="int", default=1000, help="Number of samples desired")
