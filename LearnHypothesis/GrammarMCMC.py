@@ -1,13 +1,5 @@
-from LOTlib.Miscellaneous import display_option_summary
-from LOTlib.MPI.MPI_map import MPI_map, is_master_process
-import pickle
-import numpy as np
-from Model import *
-from optparse import OptionParser
-from Model.AlphaBetaGrammarMH import AlphaBetaGrammarMH
-from LOTlib.Inference.Samplers.MetropolisHastings import MHSampler
-np.set_printoptions(threshold=np.inf)
-
+from LearnHypothesis import *
+import numpy
 ######################################################################################################
 #   Option Parser
 ######################################################################################################
@@ -15,14 +7,14 @@ parser = OptionParser()
 parser.add_option("--human", dest='data_loc', type='string', help="Generalization Data location",
                   default='human.data')
 parser.add_option("--space", dest='space_loc', type='string', help="Hypothesis Space location",
-                  default='Snowcharming.pkl')
-parser.add_option("--out", dest="out_path", type="string", help="Output file (a pickle of FiniteBestSet)",
-                  default="DidItWork.pkl")
-parser.add_option("--scale", dest="scale", type="float", help="Scale for the dirichlet proposal.", default=600.)
+                  default='2dp_HypothesisSpace.pkl')
+parser.add_option("--out", dest="out_path", type="string", help="Output file (a csv of samples)",
+                  default="FullSpace")
+parser.add_option("--viz", dest='viz', action='store_true', help="Make Vizualization Files?")
 
-parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
-parser.add_option("--thin", dest="thin", type="int", default=100, help="Number of steps between saved samples")
-parser.add_option("--chains", dest="chains", type="int", default=1, help="Number of chains to run")
+
+parser.add_option("--samples", dest="samples", type="int", default=1000, help="Number of samples desired")
+parser.add_option("--skip", dest="skip", type="int", default=100, help="Number of steps between saved samples")
 
 (options, args) = parser.parse_args()
 
@@ -37,7 +29,6 @@ grammar = makeGrammar(simple_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Genera
 # Load the hypotheses
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# map each concept to a hypothesis
 with open(options.space_loc, 'r') as f:
     hypotheses = list(pickle.load(f))
 
@@ -84,8 +75,7 @@ print "# Organized %s groups" % len(GroupLength)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get the rule count matrices
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-from LOTlib.GrammarInference.GrammarInference import create_counts
+from LOTlib.Inference.GrammarInference import create_counts
 
 # Decide which rules to use
 which_rules = [r for r in grammar if r.nt in ['SET']]
@@ -95,30 +85,42 @@ counts, sig2idx, prior_offset = create_counts(grammar, hypotheses, which_rules=w
 print "# Computed counts for each hypothesis & nonterminal"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MCMC
+# Make model files for vizualization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if options.viz:
+    numpy.savetxt('Viz/Likelihoods_' + options.out_path + '.csv', numpy.array(L).T)
 
-def run(a):
-    hyps = set()
-    h0 = AlphaBetaGrammarMH(counts, hypotheses, L, GroupLength, prior_offset, NYes, NTrials, Output, scale=options.scale, step_size=0.5)
-    mhs = MHSampler(h0, [], options.steps)
-    for s, h in enumerate(mhs):
-        if s % options.thin == 0:
-            a = str(mhs.acceptance_ratio()) + ',' + str(h.prior) + ',' + str(h.likelihood) + ',' + ','.join([str(x) for x in h.value['SET']])
-            print a, '\n', h.alpha, h.beta, h.llt
-            hyps.add(a)
-    with open("Chains/Chain_"+str(a)+".pkl", 'w') as f:
-        pickle.dump(hyps, f)
-    return hyps
+    with open('Viz/Model_' + options.out_path + '.csv', 'w') as f:
+        f.writelines('\n'.join([','.join([str(r) for r in h]) for h in numpy.array(Output).T]))
 
-argarray = map(lambda x: [x], np.arange(options.chains))
+    with open('Viz/Counts_' + options.out_path + '.csv', 'w') as f:
+        f.writelines('\n'.join([','.join([str(r) for r in h]) for h in counts['SET']]))
 
-if is_master_process():
-    display_option_summary(options)
+    for r in which_rules: print r
 
-hypothesis_set = set()
-for fs in MPI_map(run, argarray, progress_bar=False):
-    hypothesis_set.update(fs)
+from LOTlib.Inference.GrammarInference.SimpleGrammarHypothesis import SimpleGrammarHypothesis
+from LOTlib.Inference.GrammarInference.FullGrammarHypothesis import FullGrammarHypothesis
 
-with open(options.out_path, 'w') as f:
-    pickle.dump(hypothesis_set, f)
+from LOTlib.Inference.Samplers.MetropolisHastings import MHSampler
+
+h0 = SimpleGrammarHypothesis(counts, L, GroupLength, prior_offset, NYes, NTrials, Output)
+#h0 = FullGrammarHypothesis(counts, L, GroupLength, prior_offset, NYes, NTrials, Output)
+
+writ = []
+mhs = MHSampler(h0, [], options.samples, skip=options.skip)
+for s, h in break_ctrlc(enumerate(mhs)):
+
+    if isinstance(h, SimpleGrammarHypothesis):
+        a = str(mhs.acceptance_ratio()) + ',' + str(h.prior) + ',' + str(h.likelihood) +  ',RULES,' +\
+            ','.join([str(x) for x in h.value['SET'].value])
+    else:
+        assert isinstance(h, FullGrammarHypothesis)
+        a = str(mhs.acceptance_ratio()) + ',' + str(h.prior) + ',' + str(h.likelihood) +  ',' + \
+        str(h.value['alpha'].value[0]) + ',' + str(h.value['beta'].value[0]) + ',' + \
+        str(h.value['prior_temperature']) + ',' + str(h.value['likelihood_temperature'])  + ',RULES,' +\
+            ','.join([str(x) for x in h.value['rulep']['SET'].value])
+    print a
+    writ.append(a)
+
+with open('Viz/' + options.out_path + '.csv', 'w') as f:
+    f.writelines('\n'.join(writ))

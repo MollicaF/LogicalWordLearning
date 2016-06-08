@@ -5,7 +5,7 @@ library(reshape)
 library(boot)
 library(gdata)
 
-data = read.csv('results.csv', header=F)
+data = read.csv('PukaPuka/pukapukaResults.csv', header=F)
 colnames(data) = c('HypNo', 'Prior', 'Point_LL', 'Word', 'Correct', 'Proposed', 'Truth')
 
 data$ACC = 0
@@ -18,6 +18,9 @@ data$Recall = data$Correct / data$Truth
 data$Word = trim(data$Word)
 #data$Word = mapvalues(data$Word, from = c(" 'siblings'", " 'grandparents'", " 'parents'", " 'cousins'", " 'uncles/aunts'", " 'spouses'", " 'children'"), to = c("Sibling", "Grandparent", "Parent", "Cousin", "Uncle/Aunt", "Spouse", "Child"))
 
+unique(data$Word[data$ACC==1])
+length(unique(data$Word[data$ACC==1]))
+length(unique(data$Word))
 
 exp_stats <- function(df, amount) {
 	posterior = df$Prior + amount*df$Point_LL
@@ -27,7 +30,7 @@ exp_stats <- function(df, amount) {
 }
 
 d = NULL
-for (amt in 1:400) {
+for (amt in seq(0, 170, 10)) {
     k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt)})
     d = rbind(d, k)
 }
@@ -43,8 +46,19 @@ ggplot(d, aes(x=amount, value, linetype=variable, color=variable)) +
 	ylim(0,1) +
     theme(legend.title=element_blank())
 
-ggsave('NRnego.eps', width=12, height=2)
+ggsave('turkish1.eps', width=11, height=1.96)
 
+ggsave('PukaPukatake5.eps', width=7, height=4)
+
+
+#### Something wicked
+
+ggplot(data, aes(-Prior, -Point_LL)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_grid(.~Word) +
+  theme_bw()
 
 ### Frequency Analysis
 data$prop = log(data$Y/(1-data$Y))
