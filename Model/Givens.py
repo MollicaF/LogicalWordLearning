@@ -96,6 +96,24 @@ brother.force_function('brother', lambda recurse_, C, X: male_(setdifference_(ch
 grandma = KinshipLexicon(words=['grandma'])
 grandma.force_function('grandma', lambda recurse_, C, X: female_(parents_of_(parents_of_(X, C), C)))
 
+#   Gendered English
+
+english = KinshipLexicon(words=english_words)
+english.force_function('mother', lambda recurse_, C, X: female_(parents_of_(X, C)))
+english.force_function('father', lambda recurse_, C, X: male_(parents_of_(X, C)))
+english.force_function('brother', lambda recurse_, C, X: male_(setdifference_(children_of_(parents_of_(X, C), C), X)))
+english.force_function('sister', lambda recurse_, C, X: female_(setdifference_(children_of_(parents_of_(X, C), C), X)))
+english.force_function('uncle', lambda recurse_, C, X: male_(union_(
+    setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)),
+    spouses_of_(setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C))))
+english.force_function('aunt', lambda recurse_, C, X: female_(union_(
+    setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)),
+    spouses_of_(setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C))))
+english.force_function('grandma', lambda recurse_, C, X: female_(parents_of_(parents_of_(X, C), C)))
+english.force_function('grandpa', lambda recurse_, C, X: male_(parents_of_(parents_of_(X, C), C)))
+english.force_function('cousin', lambda recurse_, C, X: children_of_(setdifference_(children_of_(parents_of_(
+    parents_of_(X, C), C), C), parents_of_(X, C)), C))
+
 #   Hawaiian Lexicon
 
 hawaiian = KinshipLexicon(words=hawaiian_words)

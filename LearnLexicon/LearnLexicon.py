@@ -136,6 +136,26 @@ elif options.family == 'crow':
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=crow_words,
                                        nterms=grammar_set, recursive=options.recurse)
 
+elif options.family == 'english':
+
+    from Model.Givens import english, four_gen_tree_context, english_words, four_gen_tree_objs
+
+    target = english
+
+    target_words = english_words
+
+    if options.Prior is None:
+
+        my_grammar = makeGrammar(four_gen_tree_objs, words=english_words,
+
+                                 nterms=grammar_set, recursive=options.recurse)
+
+    else:
+
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=english_words,
+
+                                       nterms=grammar_set, recursive=options.recurse)
+
 else:
     from Model.Givens import target, four_gen_tree_context, genderless_english_words, four_gen_tree_objs
 
