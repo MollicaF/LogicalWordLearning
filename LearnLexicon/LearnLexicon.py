@@ -15,7 +15,7 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
 parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
-parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkishA')
+parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkish')
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="turkish.pkl")
 
@@ -79,16 +79,16 @@ elif options.family == 'sudanese':
     else:
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=sudanese_words,
                                        nterms=grammar_set, recursive=options.recurse)
-elif options.family == 'turkishA':
-    from Model.Givens import turkishA, four_gen_tree_context, turkish_wordsA, four_gen_tree_objs
+elif options.family == 'turkish':
+    from Model.Givens import turkish, four_gen_tree_context, turkish_words, four_gen_tree_objs
 
-    target = turkishA
-    target_words = turkish_wordsA
+    target = turkish
+    target_words = turkish_words
     if options.Prior is None:
-        my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_wordsA,
+        my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
                                  nterms=grammar_set, recursive=options.recurse)
     else:
-        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=turkish_wordsA,
+        my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=turkish_words,
                                        nterms=grammar_set, recursive=options.recurse)
 elif options.family == 'eskimo':
     from Model.Givens import eskimo, four_gen_tree_context, eskimo_words, four_gen_tree_objs
@@ -184,6 +184,11 @@ def run(data_amount):
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
         hyps.add(h)
+
+    import pickle
+    print 'Writing ' + data[0].X + data[0].Y + str(data_amount) + data[0].word + '.pkl'
+    with open('Chains/' + data[0].X + data[0].Y + str(data_amount) + data[0].word + '.pkl', 'w') as f:
+        pickle.dump(hyps, f)
 
     return hyps
 
