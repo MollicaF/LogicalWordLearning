@@ -3,6 +3,8 @@ library(matrixStats)
 library(reshape)
 library(gdata)
 
+md = 'Inference'
+
 hd = read.csv('snow.data')
 hd$X = NULL
 gen = hd[, 5:14]/hd[, 4]
@@ -48,7 +50,7 @@ hypotheses = lt[lt$Posterior==max(lt$Posterior),]
 
 counts = as.matrix(cnts)
 rules = log(as.matrix(hypotheses[, c(5:34)]))
-prior = rules %*% t(counts)
+prior = t(rules) %*% t(counts)
 
 m = NULL
 for(i in 1:dim(L)[2]) {
@@ -88,8 +90,6 @@ for(i in 1:dim(L)[2]) {
 m$Plot = as.factor(m$Plot)
 m$Plot = factor(m$Plot, levels(m$Plot)[c(3,1,2)])
 
-m = GenProbs('Inference')
-
 ggplot(m, aes(Object, Prob)) +
   stat_summary(fun.y=mean, geom='point') + 
   #stat_summary(fun.data=mean_cl_boot, geom='linerange') +
@@ -106,8 +106,11 @@ grammarPriors = melt(rules)
 grammarPriors$X2 = reorder(grammarPriors$X2, new.order=colnames(rules))
 
 ggplot(grammarPriors, aes(X2, exp(value))) +
-  stat_summary(fun.y=mean, geom='point') + 
+  stat_summary(fun.y=mean, geom='point') +
+  geom_hline(aes(yintercept=1/30), linetype=2) +
   #stat_summary(fun.data=mean_cl_boot, geom='linerange') +
   xlab('') + ylab('Rule Probability') +
   theme_bw() +
   theme(axis.text.x=element_text(angle=80, hjust=.5, vjust=.5))
+
+#ggsave('grammarRules.eps', width=6, height=4)
