@@ -34,6 +34,13 @@ with open(options.space, 'r') as f:
 
 print '## Loaded', len(hypothesis_space), 'hypotheses.'
 
+# Renormalize posterior over hypotheses
+huge_data = makeLexiconData(target, four_gen_tree_context, n=options.size, alpha=options.alpha, verbose=False)
+L = dict()
+for w in target.all_words():
+    data = [dp for dp in huge_data if dp.word == w]
+    L[w] = [sum(h.compute_posterior(data)) for h in hypothesis_space]
+
 # How many hyps per mass?
 def countMass(hyps):
     [h.compute_posterior(huge_data) for h in hyps]
@@ -52,13 +59,6 @@ def countMass(hyps):
             return numHyps
 
 print "Initial No. Hyps w/in 95% mass:", countMass(hypothesis_space)
-
-# Renormalize posterior over hypotheses
-huge_data = makeLexiconData(target, four_gen_tree_context, n=options.size, alpha=options.alpha, verbose=False)
-L = dict()
-for w in target.all_words():
-    data = [dp for dp in huge_data if dp.word == w]
-    L[w] = [sum(h.compute_posterior(data)) for h in hypothesis_space]
 
 ######################################################################################################
 #   Sampler Class
@@ -129,4 +129,4 @@ for s, h in enumerate(gs):
 with open(options.out_loc, 'w') as f:
     pickle.dump(gibbed, f)
 
-print "Mixed:", countMass(gibbed)
+print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
