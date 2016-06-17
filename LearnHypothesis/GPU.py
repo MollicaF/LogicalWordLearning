@@ -72,10 +72,8 @@ C = shared(Clocal, config.floatX)
 
 ones = shared(np.ones(Llocal.shape[1]), config.floatX)
 
-t10 = time.time()
 # Define tensor variables
 X = T.dvector("X")
-#g = T.dscalar('g')
 
 # Define the graph
 posterior_score = T.outer(T.dot(C, X), ones) + L
@@ -94,11 +92,12 @@ human_ll = function(inputs=[X], outputs=scan_results)
 
 D = np.asarray(np.log(dirichlet.rvs(np.ones(30))[0]), config.floatX)
 
-#t10 = time.time()
-print human_ll(D)[-1]
-t11 = time.time()
-print t11-t10
+def last(x):
+    return -1 * human_ll(x)[-1]
 
+print last(D)
+
+'''
 t0 = time.time()
 
 X = shared(D, config.floatX)
@@ -133,23 +132,22 @@ print human_ll
 t1 = time.time()
 
 print t1-t0
-
+'''
 
 
 from scipy.optimize import minimize
 
-#
-# print "## Loaded all the data and model."
-# print "## Starting the ascent!!!"
+print "## Loaded all the data and model."
+print "## Starting the ascent!!!"
 
-# best = ([], np.Inf)
-# for _ in xrange(1):
-#     o = minimize(binomial, np.log(dirichlet.rvs(np.ones(30))[0]))
-#     if not o.success: print o.message
-#
-#     a = np.exp(o.x)
-#     a = a / np.sum(a)
-#     if binomial(a) < best[1]:
-#         best = (a, binomial(np.log(a)))
-#
-# print best
+best = ([], np.Inf)
+for _ in xrange(1):
+    o = minimize(last, np.asarray(np.log(dirichlet.rvs(np.ones(30))[0]), config.floatX))
+    if not o.success: print o.message
+
+    a = np.exp(o.x)
+    a = a / np.sum(a)
+    if last(np.log(a)) < best[1]:
+        best = (a, last(np.log(a)))
+
+print best
