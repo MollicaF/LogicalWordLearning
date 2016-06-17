@@ -5,7 +5,7 @@ library(reshape)
 library(boot)
 library(gdata)
 
-data = read.csv('PukaPuka/pukapukaResults.csv', header=F)
+data = read.csv('English/English.csv', header=F)
 colnames(data) = c('HypNo', 'Prior', 'Point_LL', 'Word', 'Correct', 'Proposed', 'Truth')
 
 data$ACC = 0
@@ -22,16 +22,16 @@ unique(data$Word[data$ACC==1])
 length(unique(data$Word[data$ACC==1]))
 length(unique(data$Word))
 
-exp_stats <- function(df, amount) {
-	posterior = df$Prior + amount*df$Point_LL
+exp_stats <- function(df, amount, lt) {
+	posterior = df$Prior + (amount*df$Point_LL)/lt
 	lse = logSumExp(posterior)
 	p = exp(posterior - lse)
     data.frame(amount=amount, Accuracy=sum(p*df$ACC), Precision=sum(p*df$Precision), Recall=sum(p*df$Recall))
 }
 
 d = NULL
-for (amt in seq(0, 170, 10)) {
-    k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt)})
+for (amt in seq(0, 10000, 20)) {
+    k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt, 0.1)})
     d = rbind(d, k)
 }
 
@@ -43,12 +43,12 @@ ggplot(d, aes(x=amount, value, linetype=variable, color=variable)) +
 	geom_line(size=1) +
 	theme_bw() +
 	scale_colour_brewer(palette="Set1") +
-	ylim(0,1) +
-    theme(legend.title=element_blank())
+	#ylim(0,1) +
+  theme(legend.title=element_blank())
 
-ggsave('turkish1.eps', width=11, height=1.96)
+#ggsave('turkish1.eps', width=11, height=1.96)
 
-ggsave('PukaPukatake5.eps', width=7, height=4)
+#ggsave('PukaPukatake5.eps', width=7, height=4)
 
 
 #### Something wicked
