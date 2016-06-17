@@ -72,9 +72,10 @@ C = shared(Clocal, config.floatX)
 
 ones = shared(np.ones(Llocal.shape[1]), config.floatX)
 
+t10 = time.time()
 # Define tensor variables
-X = T.fmatrix("X")
-#g = T.fscalar('g')
+X = T.dvector("X")
+#g = T.dscalar('g')
 
 # Define the graph
 posterior_score = T.outer(T.dot(C, X), ones) + L
@@ -86,16 +87,21 @@ def binom(g, ll):
 
 seq = T.arange(45)
 scan_results, scan_updates = scan(fn=binom,
-                                  outputs_info=T.as_tensor_variable(np.asarray(0, seq.dtype)),
+                                  outputs_info=T.as_tensor_variable(np.asarray(0, config.floatX)),
                                   sequences=seq)
 
 human_ll = function(inputs=[X], outputs=scan_results)
 
-print human_ll
+D = np.asarray(np.log(dirichlet.rvs(np.ones(30))[0]), config.floatX)
+
+#t10 = time.time()
+print human_ll(D)[-1]
+t11 = time.time()
+print t11-t10
 
 t0 = time.time()
 
-X = shared(np.log(dirichlet.rvs(np.ones(30))[0]), config.floatX)
+X = shared(D, config.floatX)
 
 # f1 = function([], sandbox.cuda.basic_ops.gpu_from_host(T.outer(T.dot(C, X), ones) + L))
 f1 = function([], T.outer(T.dot(C, X), ones) + L)
