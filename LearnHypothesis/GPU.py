@@ -55,9 +55,8 @@ print "# Loaded human data"
 # GPU
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from theano import function, config, shared, sandbox
+from theano import function, config, shared, sandbox, scan
 import theano.tensor as T
-import numpy
 
 # Load stuff onto the GPU
 
@@ -73,6 +72,27 @@ C = shared(Clocal, config.floatX)
 
 ones = shared(np.ones(Llocal.shape[1]), config.floatX)
 
+# Define tensor variables
+X = T.fmatrix("X")
+#g = T.fscalar('g')
+
+# Define the graph
+posterior_score = T.outer(T.dot(C, X), ones) + L
+posterior = T.exp(posterior_score-T.log(T.sum(T.exp(posterior_score-T.max(posterior_score, axis=0))))-T.max(posterior_score, axis=0))
+
+def binom(g, ll):
+    p = T.dot(posterior.T[g, :], R[g, :])
+    return ll + T.sum(T.log(p) * H[:, g] + T.log(1. - p) * (N[:, g] - H[:, g]))
+
+seq = T.arange(45)
+scan_results, scan_updates = scan(fn=binom,
+                                  outputs_info=T.as_tensor_variable(np.asarray(0, seq.dtype)),
+                                  sequences=seq)
+
+human_ll = function(inputs=[X], outputs=scan_results)
+
+print human_ll
+
 t0 = time.time()
 
 X = shared(np.log(dirichlet.rvs(np.ones(30))[0]), config.floatX)
@@ -83,7 +103,7 @@ f1 = function([], T.outer(T.dot(C, X), ones) + L)
 posterior_score = shared(f1())
 # print type(posterior_score), posterior_score
 #
-f2 = function([], T.exp(posterior_score-T.log(T.sum(T.exp(posterior_score-T.max(posterior_score, axis=0))))-T.max(posterior_score, axis=0)))  # TODO: u should be columnwise)
+f2 = function([], T.exp(posterior_score-T.log(T.sum(T.exp(posterior_score-T.max(posterior_score, axis=0))))-T.max(posterior_score, axis=0)))
 posterior = shared(f2())
 
 #
