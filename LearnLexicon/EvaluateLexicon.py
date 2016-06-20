@@ -1,9 +1,8 @@
 import pickle
 from Model import *
 from optparse import OptionParser
-from Model.Givens import turkishA, four_gen_tree_context
+from Model.Givens import turkish, english, pukapuka, four_gen_tree_context
 
-target = turkishA
 
 #############################################################################################
 #    Option Parser
@@ -14,6 +13,7 @@ parser.add_option("--read", dest="input_loc", type="string", help="Pickled resul
 parser.add_option("--pickle", dest="pkl_loc", type="string", help="Output a pkl", default=None)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="results.csv")
+parser.add_option("--family", dest="family", type="string", help="Family", default='english')
 
 parser.add_option("--data", dest="data_size", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
@@ -24,6 +24,7 @@ parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise
 #############################################################################################
 #    SUPER COOL FUNCTION
 #############################################################################################
+target = eval(options.family)
 
 
 def assess_hyp(hypothesis, target_lexicon, context):
