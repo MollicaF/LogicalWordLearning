@@ -131,8 +131,8 @@ for s, h in enumerate(gs):
         print h
         gibbed.add(h)
 
-# with open(options.out_loc, 'w') as f:
-#     pickle.dump(gibbed, f)
+with open(options.out_loc, 'w') as f:
+    pickle.dump(gibbed, f)
 
 #print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
 print len(hypothesis_space), 'altered to', len(gibbed)
