@@ -13,12 +13,12 @@ parser = OptionParser()
 parser.add_option("--family", dest='family', type='string', help="What is the target",
                   default='english')
 parser.add_option("--space", dest="space", type='string', help="Pickled hypotheses",
-                  default='English.pkl')
+                  default='Truncated.pkl')
 parser.add_option("--out", dest="out_loc", type='string', help="Output file location",
                   default='GibbsEnglish.pkl')
 parser.add_option("--size", dest="size", type='int', help='Normaliation data size', default=1000)
 parser.add_option("--alpha", dest="alpha", type='float', help='Reliability of a data point', default=0.9)
-parser.add_option("--samples", dest="samples", type="int", help="Number of samples desired", default=1000)
+parser.add_option("--samples", dest="samples", type="int", help="Number of samples desired", default=100000)
 
 
 (options, args) = parser.parse_args()
@@ -37,10 +37,13 @@ print '## Loaded', len(hypothesis_space), 'hypotheses.'
 # Renormalize posterior over hypotheses
 huge_data = makeLexiconData(target, four_gen_tree_context, n=options.size, alpha=options.alpha, verbose=False)
 L = dict()
-for w in target.all_words():
+P = np.zeros((len(target.all_words()), len(hypothesis_space)))
+for i, w in enumerate(target.all_words()):
     data = [dp for dp in huge_data if dp.word == w]
-    L[w] = [sum(h.compute_posterior(data)) for h in hypothesis_space]
+    L[w] = [h.value[w].compute_prior() + h.compute_posterior(data)[1] for h in hypothesis_space]
+    P[i, :] = L[w]
 
+np.savetxt('Post.csv', P, delimiter=',')
 # How many hyps per mass?
 def countMass(hyps):
     [h.compute_posterior(huge_data) for h in hyps]
@@ -58,7 +61,7 @@ def countMass(hyps):
         else:
             return numHyps
 
-print "Initial No. Hyps w/in 95% mass:", countMass(hypothesis_space)
+#print "Initial No. Hyps w/in 95% mass:", countMass(hypothesis_space)
 
 ######################################################################################################
 #   Sampler Class
@@ -124,9 +127,12 @@ gs = Gibbs(hypothesis_space[0], huge_data, steps=options.samples)
 
 gibbed = set()
 for s, h in enumerate(gs):
-    gibbed.add(h)
+    if h not in gibbed:
+        print h
+        gibbed.add(h)
 
-with open(options.out_loc, 'w') as f:
-    pickle.dump(gibbed, f)
+# with open(options.out_loc, 'w') as f:
+#     pickle.dump(gibbed, f)
 
-print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
+#print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
+print len(hypothesis_space), 'altered to', len(gibbed)
