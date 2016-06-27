@@ -13,7 +13,7 @@ parser = OptionParser()
 parser.add_option("--family", dest='family', type='string', help="What is the target",
                   default='english')
 parser.add_option("--space", dest="space", type='string', help="Pickled hypotheses",
-                  default='Truncated.pkl')
+                  default='truncated.pkl')
 parser.add_option("--out", dest="out_loc", type='string', help="Output file location",
                   default='GibbsEnglish.pkl')
 parser.add_option("--size", dest="size", type='int', help='Normaliation data size', default=1000)
@@ -34,16 +34,28 @@ with open(options.space, 'r') as f:
 
 print '## Loaded', len(hypothesis_space), 'hypotheses.'
 
-# Renormalize posterior over hypotheses
 huge_data = makeLexiconData(target, four_gen_tree_context, n=options.size, alpha=options.alpha, verbose=False)
-L = dict()
-P = np.zeros((len(target.all_words()), len(hypothesis_space)))
-for i, w in enumerate(target.all_words()):
-    data = [dp for dp in huge_data if dp.word == w]
-    L[w] = [h.value[w].compute_prior() + h.compute_posterior(data)[1] for h in hypothesis_space]
-    P[i, :] = L[w]
+# Split lexicon's into hypotheses
+lexicon = { w : set() for w in target.all_words() }
+for h in hypothesis_space:
+    for w in h.all_words():
+        data = [dp for dp in huge_data if dp.word == w]
+        h.value[w].stored_likelihood = h.compute_likelihood(data)
+        lexicon[w].add(h.value[w])
 
-np.savetxt('Post.csv', P, delimiter=',')
+for w in lexicon.keys():
+    length = len(lexicon[w])
+    lexicon[w] = list(lexicon[w])
+    if len(lexicon[w])==length: print length, 'hypotheses for', w
+
+# Renormalize posterior over hypotheses
+L = dict()
+#P = np.zeros((len(target.all_words()), len(hypothesis_space)))
+for i, w in enumerate(target.all_words()):
+    L[w] = [h.compute_prior() + h.stored_likelihood for h in lexicon[w]]
+    #P[i, :] = L[w]
+
+#np.savetxt('Post.csv', P, delimiter=',')
 # How many hyps per mass?
 def countMass(hyps):
     [h.compute_posterior(huge_data) for h in hyps]
@@ -67,10 +79,20 @@ def countMass(hyps):
 #   Sampler Class
 ######################################################################################################
 
-def propose(current_state, bag=hypothesis_space, probs=L):
+inx = 0
+words = target.all_words()
+# def propose(current_state, bag=lexicon, probs=L):
+#     proposal = copy(current_state)
+#     for w in current_state.value.keys():
+#         proposal.value[w].value = weighted_sample(bag[w], probs=probs[w], log=True).value
+#     return proposal
+def propose(current_state, bag=lexicon, probs=L):
+    global inx
     proposal = copy(current_state)
-    for w in current_state.value.keys():
-        proposal.value[w].value = weighted_sample(bag, probs=probs[w], log=True).value[w].value
+    if inx > len(words)-1:
+        inx = 0
+    proposal.value[words[inx]].value = weighted_sample(bag[words[inx]], probs=probs[words[inx]], log=True).value
+    inx += 1
     return proposal
 
 proposer = lambda x : propose(x)
@@ -128,7 +150,7 @@ gs = Gibbs(hypothesis_space[0], huge_data, steps=options.samples)
 gibbed = set()
 for s, h in enumerate(gs):
     if h not in gibbed:
-        print h
+        print h.prior, h.likelihood, h
         gibbed.add(h)
 
 with open(options.out_loc, 'w') as f:
