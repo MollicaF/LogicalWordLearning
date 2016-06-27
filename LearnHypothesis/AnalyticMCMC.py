@@ -18,9 +18,9 @@ parser.add_option("--samples", dest="samples", type="int", default=1, help="Numb
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-R = np.loadtxt('Viz/Model_'+ options.model_loc +'.csv', delimiter=',')
-C = np.loadtxt('Viz/Counts_'+ options.model_loc +'.csv', delimiter=',')
-L = np.loadtxt('Viz/Likelihoods_'+options.model_loc+'.csv')
+R = np.loadtxt('Model_'+ options.model_loc +'.csv', delimiter=',')
+C = np.loadtxt('Counts_'+ options.model_loc +'.csv', delimiter=',')
+L = np.loadtxt('Likelihoods_'+options.model_loc+'.csv')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the human data
@@ -54,13 +54,12 @@ def realogpmf(X, N, P):
 def binomial(X):
     post = outer(dot(C, X), np.ones(L.shape[1])) + L
     u = np.max(post, axis=0)
-    Z = u + np.log(np.sum(np.exp(post-u)))
+    Z = u + np.log(np.sum(np.exp(post-u), axis=0))
     post = np.exp(post - Z)
     p = 0
     for g in xrange(L.shape[1]):
         pred = dot(post.T[g, :], R[g,:])
         p += np.sum(logpmf(H[:, g], N[:, g], pred))
-    print p
     return -1*p
 
 from scipy.optimize import minimize
@@ -76,7 +75,7 @@ for _ in xrange(1):
 
     a = np.exp(o.x)
     a = a / np.sum(a)
-    if binomial(a) < best[1]:
+    if binomial(np.log(a)) < best[1]:
         best = (a, binomial(np.log(a)))
 
 print best
