@@ -40,7 +40,7 @@ lexicon = { w : set() for w in target.all_words() }
 for h in hypothesis_space:
     for w in h.all_words():
         data = [dp for dp in huge_data if dp.word == w]
-        h.value[w].stored_likelihood = h.compute_likelihood(data)
+        h.value[w].stored_likelihood = h.compute_word_likelihood(data)
         lexicon[w].add(h.value[w])
 
 for w in lexicon.keys():
