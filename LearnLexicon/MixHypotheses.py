@@ -40,7 +40,7 @@ lexicon = { w : set() for w in target.all_words() }
 for h in hypothesis_space:
     for w in h.all_words():
         data = [dp for dp in huge_data if dp.word == w]
-        h.value[w].stored_likelihood = h.compute_likelihood(data)
+        h.value[w].stored_likelihood = h.compute_word_likelihood(data)
         lexicon[w].add(h.value[w])
 
 for w in lexicon.keys():
@@ -50,12 +50,15 @@ for w in lexicon.keys():
 
 # Renormalize posterior over hypotheses
 L = dict()
-P = np.zeros((len(target.all_words()), len(hypothesis_space)))
+P = [] #np.zeros((len(target.all_words()), len(hypothesis_space)))
 for i, w in enumerate(target.all_words()):
     L[w] = [h.compute_prior() + h.stored_likelihood for h in lexicon[w]]
-    P[i, :] = L[w]
+    P.append(L[w])
 
-np.savetxt('Post.csv', P, delimiter=',')
+
+with open('Post.csv','w') as f:
+    f.write('\n'.join([','.join([str(i) for i in r]) for r in P]))
+#np.savetxt('Post.csv', P, delimiter=',')
 # How many hyps per mass?
 def countMass(hyps):
     [h.compute_posterior(huge_data) for h in hyps]
