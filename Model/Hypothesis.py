@@ -1,7 +1,7 @@
 from LOTlib.Miscellaneous import Infinity, log
 from LOTlib.Hypotheses.Lexicon.RecursiveLexicon import RecursiveLexicon
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
-from LOTlib.Eval import EvaluationException
+from LOTlib.Eval import EvaluationException, RecursionDepthException
 from Utilities import reachable
 from Grammar import makeGrammar
 
@@ -32,6 +32,39 @@ class KinshipLexicon(RecursiveLexicon):
             self.prior = sum([x.compute_prior() for x in self.value.values()]) / self.prior_temperature
             self.update_posterior()
         return self.prior
+
+    def compute_word_likelihood(self, data, **kwargs):
+        word = data[0].word
+        assert sum([1 for dp in data if dp.word == word]) == len(data)
+        constants = dict()
+        ll = 0
+        for datum in data:
+            if datum.context in constants.keys():
+                trueset = constants[datum.context][0]
+                all_poss = constants[datum.context][1]
+            else:
+                try:
+                    if datum.context.ego is None:
+                        trueset = self.make_word_data(word, datum.context)
+                    else:
+                        trueset = self.make_word_data(word, datum.context, fixX=datum.context.ego)
+
+                    all_poss = len(datum.context.objects) ** 2
+                    constants[datum.context] = [trueset, all_poss]
+                except RecursionDepthException:
+                    self.likelihood = -Infinity
+                    self.update_posterior()
+                    return self.likelihood
+
+            if (datum.word, datum.X, datum.Y) in trueset:
+                ll += log(self.alpha / len(trueset) + ((1. - self.alpha) / all_poss))
+            else:
+                ll += log((1. - self.alpha) / all_poss)
+
+        self.likelihood = ll / self.likelihood_temperature
+
+        self.update_posterior()
+        return self.likelihood
 
     def compute_likelihood(self, data, **kwargs):
         constants = dict()
@@ -87,6 +120,20 @@ class KinshipLexicon(RecursiveLexicon):
                     trueset.add( (w, fixX, y) )
         return trueset
 
+
+    def make_word_data(self, word, context, fixX=None):
+        """
+        Return a set of relation tuples that are true for a single word
+        """
+        trueset = set()
+        if fixX is None:
+            for x in context.objects:
+                for y in self(word, context, set([x])):  # x must be a set here
+                    trueset.add((word, x, y))
+        else:
+            for y in self(word, context, set([fixX])):  # x must be a set here
+                trueset.add((word, fixX, y))
+        return trueset
 
 
 '''
