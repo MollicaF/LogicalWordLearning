@@ -33,7 +33,7 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
     ground_truth = target_lexicon.make_true_data(context)
     hypothesized_lexicon_data = hypothesis.make_true_data(context)
     for w in target_lexicon.all_words():
-        data = [dp for dp in huge_data if dp.Word == w]
+        data = [dp for dp in huge_data if dp.word == w]
         hypothesized_word_data = set()
         for dp in hypothesized_lexicon_data:
             if dp[0] == w:
