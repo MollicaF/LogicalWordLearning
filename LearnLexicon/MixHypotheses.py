@@ -148,7 +148,16 @@ class Gibbs(Sampler):
 #   Run Time Code
 ######################################################################################################
 
-gs = Gibbs(hypothesis_space[0], huge_data, steps=options.samples)
+from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
+grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
+my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
+                         nterms=grammar_set, recursive=options.recurse)
+
+h0 = KinshipLexicon(alpha=options.alpha)
+for w in target.all_words():
+    h0.set_word(w, LOTHypothesis(my_grammar, display='lambda recurse_, C, X: %s'))
+
+gs = Gibbs(h0, huge_data, steps=options.samples)
 
 gibbed = set()
 for s, h in enumerate(gs):
