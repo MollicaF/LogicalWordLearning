@@ -13,12 +13,12 @@ parser = OptionParser()
 parser.add_option("--family", dest='family', type='string', help="What is the target",
                   default='english')
 parser.add_option("--space", dest="space", type='string', help="Pickled hypotheses",
-                  default='English.pkl')
+                  default='truncated.pkl')
 parser.add_option("--out", dest="out_loc", type='string', help="Output file location",
                   default='GibbsEnglish.pkl')
 parser.add_option("--size", dest="size", type='int', help='Normaliation data size', default=1000)
 parser.add_option("--alpha", dest="alpha", type='float', help='Reliability of a data point', default=0.9)
-parser.add_option("--samples", dest="samples", type="int", help="Number of samples desired", default=1000)
+parser.add_option("--samples", dest="samples", type="int", help="Number of samples desired", default=100000)
 
 
 (options, args) = parser.parse_args()
@@ -34,13 +34,31 @@ with open(options.space, 'r') as f:
 
 print '## Loaded', len(hypothesis_space), 'hypotheses.'
 
-# Renormalize posterior over hypotheses
 huge_data = makeLexiconData(target, four_gen_tree_context, n=options.size, alpha=options.alpha, verbose=False)
-L = dict()
-for w in target.all_words():
-    data = [dp for dp in huge_data if dp.word == w]
-    L[w] = [sum(h.compute_posterior(data)) for h in hypothesis_space]
+# Split lexicon's into hypotheses
+lexicon = { w : set() for w in target.all_words() }
+for h in hypothesis_space:
+    for w in h.all_words():
+        data = [dp for dp in huge_data if dp.word == w]
+        h.value[w].stored_likelihood = h.compute_word_likelihood(data)
+        lexicon[w].add(h.value[w])
 
+for w in lexicon.keys():
+    length = len(lexicon[w])
+    lexicon[w] = list(lexicon[w])
+    if len(lexicon[w])==length: print length, 'hypotheses for', w
+
+# Renormalize posterior over hypotheses
+L = dict()
+P = [] #np.zeros((len(target.all_words()), len(hypothesis_space)))
+for i, w in enumerate(target.all_words()):
+    L[w] = [h.compute_prior() + h.stored_likelihood for h in lexicon[w]]
+    P.append(L[w])
+
+
+with open('Post.csv','w') as f:
+    f.write('\n'.join([','.join([str(i) for i in r]) for r in P]))
+#np.savetxt('Post.csv', P, delimiter=',')
 # How many hyps per mass?
 def countMass(hyps):
     [h.compute_posterior(huge_data) for h in hyps]
@@ -58,16 +76,26 @@ def countMass(hyps):
         else:
             return numHyps
 
-print "Initial No. Hyps w/in 95% mass:", countMass(hypothesis_space)
+#print "Initial No. Hyps w/in 95% mass:", countMass(hypothesis_space)
 
 ######################################################################################################
 #   Sampler Class
 ######################################################################################################
 
-def propose(current_state, bag=hypothesis_space, probs=L):
+inx = 0
+words = target.all_words()
+# def propose(current_state, bag=lexicon, probs=L):
+#     proposal = copy(current_state)
+#     for w in current_state.value.keys():
+#         proposal.value[w].value = weighted_sample(bag[w], probs=probs[w], log=True).value
+#     return proposal
+def propose(current_state, bag=lexicon, probs=L):
+    global inx
     proposal = copy(current_state)
-    for w in current_state.value.keys():
-        proposal.value[w].value = weighted_sample(bag, probs=probs[w], log=True).value[w].value
+    if inx > len(words)-1:
+        inx = 0
+    proposal.value[words[inx]].value = weighted_sample(bag[words[inx]], probs=probs[words[inx]], log=True).value
+    inx += 1
     return proposal
 
 proposer = lambda x : propose(x)
@@ -120,13 +148,25 @@ class Gibbs(Sampler):
 #   Run Time Code
 ######################################################################################################
 
-gs = Gibbs(hypothesis_space[0], huge_data, steps=options.samples)
+from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
+grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
+my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
+                         nterms=grammar_set)
+
+h0 = KinshipLexicon(alpha=options.alpha)
+for w in target.all_words():
+    h0.set_word(w, LOTHypothesis(my_grammar, display='lambda recurse_, C, X: %s'))
+
+gs = Gibbs(h0, huge_data, steps=options.samples)
 
 gibbed = set()
 for s, h in enumerate(gs):
-    gibbed.add(h)
+    if h not in gibbed:
+        print h.prior, h.likelihood, h
+        gibbed.add(h)
 
 with open(options.out_loc, 'w') as f:
     pickle.dump(gibbed, f)
 
-print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
+#print "Final No. Hyps w/in 95% mass:", countMass(gibbed)
+print len(hypothesis_space), 'altered to', len(gibbed)

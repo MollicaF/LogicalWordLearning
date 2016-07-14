@@ -1,9 +1,8 @@
 import pickle
 from Model import *
 from optparse import OptionParser
-from Model.Givens import turkishA, four_gen_tree_context
+from Model.Givens import turkish, english, pukapuka, four_gen_tree_context
 
-target = turkishA
 
 #############################################################################################
 #    Option Parser
@@ -14,6 +13,9 @@ parser.add_option("--read", dest="input_loc", type="string", help="Pickled resul
 parser.add_option("--pickle", dest="pkl_loc", type="string", help="Output a pkl", default=None)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="results.csv")
+parser.add_option("--family", dest="family", type="string", help="Family", default='english')
+parser.add_option("--indiv", dest='indiv', action='store_true', help='Assess hypotheses instead of lexicon?',
+                  default=False)
 
 parser.add_option("--data", dest="data_size", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
@@ -24,6 +26,29 @@ parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise
 #############################################################################################
 #    SUPER COOL FUNCTION
 #############################################################################################
+target = eval(options.family)
+
+def assess_inv_hyp(hypothesis, target_lexicon, context):
+    findings = []
+    ground_truth = target_lexicon.make_true_data(context)
+    hypothesized_lexicon_data = hypothesis.make_true_data(context)
+    for w in target_lexicon.all_words():
+        data = [dp for dp in huge_data if dp.word == w]
+        hypothesized_word_data = set()
+        for dp in hypothesized_lexicon_data:
+            if dp[0] == w:
+                hypothesized_word_data.add(dp)
+        true_word_data = set()
+        for dp in ground_truth:
+            if dp[0] == w:
+                true_word_data.add(dp)
+        correct_count = 0
+        for dp in hypothesized_word_data:
+            if dp in true_word_data:
+                correct_count += 1
+        findings.append([hypothesis.value[w].compute_prior(), hypothesis.compute_word_likelihood(data)/float(len(data)),
+                         hypothesis.point_ll, w, correct_count, len(hypothesized_word_data), len(true_word_data)])
+    return findings
 
 
 def assess_hyp(hypothesis, target_lexicon, context):
@@ -60,17 +85,30 @@ with open(options.input_loc, 'r') as f:
     hypothesis_space.update(pickle.load(f))
 
 
-print "Assessing hypotheses . . ."
-results = []
-result_strings = []
-for s, h in enumerate(hypothesis_space):
-    # Normalize and calculate point_ll
-    h.compute_likelihood(huge_data)
-    h.point_ll = h.likelihood / float(options.data_size)
-    for wrd in assess_hyp(h, target, four_gen_tree_context):
-        result = [s] + wrd
-        result_strings.append(', '.join(str(i) for i in result))
-        results.append(result)
+if options.indiv:
+    print "Assessing individual hypotheses . . ."
+    results = []
+    result_strings = []
+    for s, h in enumerate(hypothesis_space):
+        # Normalize and calculate point_ll
+        h.compute_likelihood(huge_data)
+        h.point_ll = h.likelihood / float(options.data_size)
+        for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
+            result = [s] + wrd
+            result_strings.append(', '.join(str(i) for i in result))
+            results.append(result)
+else:
+    print "Assessing lexicons . . ."
+    results = []
+    result_strings = []
+    for s, h in enumerate(hypothesis_space):
+        # Normalize and calculate point_ll
+        h.compute_likelihood(huge_data)
+        h.point_ll = h.likelihood / float(options.data_size)
+        for wrd in assess_hyp(h, target, four_gen_tree_context):
+            result = [s] + wrd
+            result_strings.append(', '.join(str(i) for i in result))
+            results.append(result)
 
 
 print "Writing csv file . . ."
