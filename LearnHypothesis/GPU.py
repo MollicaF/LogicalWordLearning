@@ -7,7 +7,7 @@ from optparse import OptionParser
 import numpy as np
 from numpy import dot, outer
 from scipy.misc import factorial
-from scipy.stats import dirichlet
+from scipy.stats import dirichlet, norm
 import time
 
 ######################################################################################################
@@ -77,11 +77,17 @@ C = shared(Clocal, config.floatX)
 ones = shared(np.ones(Llocal.shape[1], dtype=floatX), config.floatX)
 
 # Define tensor variables
-if floatX=='float32': X = T.fvector("X")
-if floatX=='float64': X = T.dvector("X")
+if floatX=='float32': 
+    X = T.fvector("X")
+    llt = T.fscalar("llt")
+    pt = T.fscalar("pt")
+if floatX=='float64': 
+    X = T.dvector("X")
+    llt = T.dscalar("llt")
+    pt = T.dscalar("pt")
 
 # Define the graph
-posterior_score = T.outer(T.dot(C, X), ones) + L
+posterior_score = T.outer(T.dot(C, X)/pt, ones) + L/llt
 
 posterior = T.exp(posterior_score-T.log(T.sum(T.exp(posterior_score-T.max(posterior_score, axis=0)), axis=0))-T.max(posterior_score, axis=0))
 
@@ -94,50 +100,57 @@ seq = T.arange(45)
 scan_results, scan_updates = scan(fn=binom,
                                   outputs_info=T.as_tensor_variable(np.asarray(0, config.floatX)),
                                   sequences=seq)
-positive_ll = -1.*scan_results[-1]
+positive_ll = -1.*(scan_results[-1] + T.sum(X) - 2*((llt-1)**2) - 2*((pt-1)**2))
 
-human_ll = function(inputs=[X], outputs=positive_ll)
+human_ll = function(inputs=[X, llt, pt], outputs=positive_ll)
 
-def last(x):
-    #t0 = time.time()
-    return human_ll(np.array(x, dtype=config.floatX))
-    #print a, time.time() - t0
-    #return a
+def last(params):
+    x  = np.array(params[0:30], dtype=config.floatX)
+    lt = np.array(params[30], dtype=config.floatX)
+    pt = np.array(params[31], dtype=config.floatX)
+    return human_ll(x,lt,pt)
 
-gy = gradient.jacobian(positive_ll, X)
+gyx = gradient.jacobian(positive_ll, X)
+gyl = gradient.jacobian(positive_ll, llt)
+gyp = gradient.jacobian(positive_ll, pt)
 
-human_grad = function(inputs=[X], outputs=gy)
-#t0 = time.time()
-#print human_grad(np.ones(30, dtype=config.floatX)/30.), time.time() - t0
+human_grad = function(inputs=[X, llt, pt], outputs=[gyx, gyl, gyp])
 
 
 def human_ll_grad(x):
-    #t0 = time.time()
-    return human_grad(np.array(x, dtype=config.floatX))
-    #print 'Jacobian', time.time() - t0
-    #return a
+    a  = np.array(x[0:30], dtype=config.floatX)
+    lt = np.array(x[30], dtype=config.floatX)
+    pt = np.array(x[31], dtype=config.floatX)
+    res = human_grad(a,lt,pt)
+    res = np.append(np.append(res[0], res[1]), res[2])
+    return res
+
+
+def hess(x):
+    return  human_hess(np.array(x, dtype=config.floatX))
 
 from scipy.optimize import minimize, fmin_tnc
+
+bounds = [(-np.inf, np.inf)] * 30 + [(0, np.inf)]*2
+print bounds
 
 print "## Loaded all the data and model."
 print "## Starting the ascent!!!"
 
-Nsamples = 250
+Nsamples = 1
 
-best = np.zeros((Nsamples, 31))
+best = np.zeros((Nsamples, 33))
 for i in xrange(Nsamples):
     print 'Starting run', i
-    inp = dirichlet.rvs(np.ones(30))[0] #np.ones(30, dtype=config.floatX)/30.
-    #o = minimize(last, np.log(inp, dtype=config.floatX), jac=human_ll_grad, method='BFGS', options={'disp':True})
-    o = minimize(last, np.log(inp, dtype=config.floatX), jac=human_ll_grad, method="SLSQP", options={'ftol':1e-6})
+    inp = dirichlet.rvs(np.ones(30))[0]
+    o = minimize(last, np.append(np.log(inp, dtype=config.floatX), [1., 1.]), jac=human_ll_grad, bounds=bounds, method="SLSQP")
     if not o.success: print o.message
     else:
+	print 'Gradient', human_ll_grad(o.x)
         a = np.exp(o.x)
-        #print a
         a = a / np.sum(a)
-        best[i,:] = np.append(a, -1*last(a))
+        best[i,:] = np.append(a, -1*last(o.x))
 
-
-np.savetxt('SamplesBANANA.csv',best,delimiter=',')
+np.savetxt('SamplesMANGO.csv',best,delimiter=',')
 
 print 'Finished!'
