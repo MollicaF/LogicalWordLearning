@@ -75,3 +75,17 @@ def makeRandomData(context, word='Word', n=3, ego=None, verbose=False):
             if verbose:
                 print 'Data: ', i, data[-1]
     return data
+
+def makeUniformData(lexicon, context, n=1000, alpha=0.9):
+    output = []
+    data = {w : [] for w in lexicon.all_words()}
+    trueset = lexicon.make_true_data(context)
+    for dp in trueset:
+        data[dp[0]].extend([KinshipData(dp[0], dp[1], dp[2], context)])
+    gos = int(n * alpha)
+    for w in lexicon.all_words():
+        for _ in xrange(gos):
+            output.append(sample1(data[w]))
+        for _ in xrange(n-gos):
+            output.append(KinshipData(w, sample1(context.objects), sample1(context.objects), context))
+    return output

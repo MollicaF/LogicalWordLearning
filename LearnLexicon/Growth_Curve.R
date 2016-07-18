@@ -5,7 +5,7 @@ library(reshape)
 library(boot)
 library(gdata)
 
-data = read.csv('English/English.csv', header=F)
+data = read.csv('pukapukaRecurse.csv', header=F)
 colnames(data) = c('HypNo', 'Prior', 'Point_LL', 'Word', 'Correct', 'Proposed', 'Truth')
 
 data$ACC = 0
@@ -22,6 +22,10 @@ unique(data$Word[data$ACC==1])
 length(unique(data$Word[data$ACC==1]))
 length(unique(data$Word))
 
+hit = ddply(data, .(HypNo), summarise, hit=sum(ACC)/length(Word))
+length(hit$hit[hit$hit==1])
+length(hit$hit[hit$hit==1])/length(hit$hit)
+
 exp_stats <- function(df, amount, lt) {
 	posterior = df$Prior + (amount*df$Point_LL)/lt
 	lse = logSumExp(posterior)
@@ -30,8 +34,8 @@ exp_stats <- function(df, amount, lt) {
 }
 
 d = NULL
-for (amt in seq(0, 10000, 20)) {
-    k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt, 0.1)})
+for (amt in seq(0, 2000, 20)) {
+    k = ddply(data, .(Word), function(Z) {exp_stats(Z, amt, 1)})
     d = rbind(d, k)
 }
 
@@ -39,16 +43,17 @@ d=melt(d, id=c('Word', 'amount'))
 
 ggplot(d, aes(x=amount, value, linetype=variable, color=variable)) +
 	facet_grid(.~Word, scales='free_x') +
-    labs(y='Proportion', x='Number of Data Points') +
+  #facet_wrap(~Word, nrow=2) +
+  labs(y='Proportion', x='Number of Data Points') +
 	geom_line(size=1) +
 	theme_bw() +
 	scale_colour_brewer(palette="Set1") +
 	#ylim(0,1) +
-  theme(legend.title=element_blank())
+  theme(legend.title=element_blank()) 
 
-#ggsave('turkish1.eps', width=11, height=1.96)
+#ggsave('EnglishProof.eps', width=14, height=2)
 
-#ggsave('PukaPukatake5.eps', width=7, height=4)
+#ggsave('PukaPukaProof.eps', width=8.5, height=2)
 
 
 #### Something wicked
