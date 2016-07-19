@@ -1,5 +1,6 @@
 from collections import defaultdict
-from LOTlib.Miscellaneous import flip, sample1
+from LOTlib.Miscellaneous import flip, sample1, weighted_sample
+from Model.Utilities import zipf
 
 class KinshipData:
     def __init__(self, word, X, Y, context):
@@ -75,6 +76,33 @@ def makeRandomData(context, word='Word', n=3, ego=None, verbose=False):
             if verbose:
                 print 'Data: ', i, data[-1]
     return data
+
+
+def makeZipfianLexiconData(lexicon, word, context, n=100, s=1.0, alpha=0.9, verbose=False):
+    data = []
+    true_set = lexicon.make_true_data(context)
+    all_poss_speakers = [ t[1] for t in true_set ]
+    p = [ zipf(t, s, context, len(context.objects)) for t in all_poss_speakers ]
+
+    for i in xrange(n):
+        if flip(alpha):
+            speaker = weighted_sample(all_poss_speakers, probs=p)
+            referents = lexicon(word, context, set([speaker]))
+            p1 = [ zipf(t, s, context, len(context.objects)) for t in referents ]
+            referent = weighted_sample(referents, probs=p1)
+            if verbose:
+                print "True data:", i, word, speaker, referent
+            data.append(KinshipData(word, speaker, referent, context))
+        else:
+            x = sample1(context.objects)
+            y = sample1(context.objects)
+            if verbose:
+                print "Noise data:", i, word, x, y
+            data.append(KinshipData(word, x, y, context))
+    if verbose:
+        print lexicon.compute_likelihood(data)
+    return data
+
 
 def makeUniformData(lexicon, context, n=1000, alpha=0.9):
     output = []
