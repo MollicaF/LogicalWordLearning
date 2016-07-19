@@ -122,7 +122,7 @@ def normalize(damount):
     # Renormalize posterior over hypotheses
     L = dict()
     for i, w in enumerate(target.all_words()):
-        L[w] = [h.compute_prior() + h.compute_word_likelihood(huge_data) for h in lexicon[w]]
+        L[w] = [h.compute_prior() + h.compute_word_likelihood(huge_data, w) for h in lexicon[w]]
     return L, huge_data
 
 def run(damount):
