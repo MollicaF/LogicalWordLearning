@@ -46,7 +46,7 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
         for dp in hypothesized_word_data:
             if dp in true_word_data:
                 correct_count += 1
-        findings.append([hypothesis.value[w].compute_prior(), hypothesis.compute_word_likelihood(data)/float(len(data)),
+        findings.append([hypothesis.value[w].compute_prior(), hypothesis.compute_word_likelihood(data, w)/float(len(data)),
                          hypothesis.point_ll, w, correct_count, len(hypothesized_word_data), len(true_word_data)])
     return findings
 
