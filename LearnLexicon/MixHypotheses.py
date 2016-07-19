@@ -104,14 +104,10 @@ grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity'
 my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
                          nterms=grammar_set)
 
-def normalizeProbs(damount):
-    huge_data = makeUniformData(target, four_gen_tree_context, n=damount, alpha=options.alpha)
-    # Split lexicon's into hypotheses
+def makeLexicon():
     lexicon = { w : set() for w in target.all_words() }
     for h in hypothesis_space:
         for w in h.all_words():
-            data = [dp for dp in huge_data if dp.word == w]
-            h.value[w].stored_likelihood = h.compute_word_likelihood(data)
             lexicon[w].add(h.value[w])
 
     for w in lexicon.keys():
@@ -119,14 +115,18 @@ def normalizeProbs(damount):
         lexicon[w] = list(lexicon[w])
         if len(lexicon[w])==length: print length, 'hypotheses for', w
 
+    return lexicon
+
+def normalize(damount):
+    huge_data = makeUniformData(target, four_gen_tree_context, n=damount, alpha=options.alpha)
     # Renormalize posterior over hypotheses
     L = dict()
     for i, w in enumerate(target.all_words()):
-        L[w] = [h.compute_prior() + h.stored_likelihood for h in lexicon[w]]
-    return lexicon, L, huge_data
+        L[w] = [h.compute_prior() + h.compute_word_likelihood(huge_data) for h in lexicon[w]]
+    return L, huge_data
 
 def run(damount):
-    lexicon, L, hugeData = normalizeProbs(damount)
+    L, hugeData = normalize(damount)
     words = target.all_words()
     def propose(current_state, bag=lexicon, probs=L):
         mod = len(current_state.all_words())
@@ -152,6 +152,8 @@ def run(damount):
 ######################################################################################################
 #   Run Time Code
 ######################################################################################################
+
+lexicon = makeLexicon()
 
 argarray = map(lambda x: [x], options.data_pts * options.chains)
 

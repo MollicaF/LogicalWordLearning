@@ -33,9 +33,9 @@ class KinshipLexicon(RecursiveLexicon):
             self.update_posterior()
         return self.prior
 
-    def compute_word_likelihood(self, data, **kwargs):
-        word = data[0].word
-        assert sum([1 for dp in data if dp.word == word]) == len(data)
+    def compute_word_likelihood(self, data, word):
+        data = [dp for dp in data if dp.word == word]
+        assert len(data) > 0
         constants = dict()
         ll = 0
         for datum in data:
