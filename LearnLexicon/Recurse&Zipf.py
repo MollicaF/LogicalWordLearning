@@ -6,6 +6,7 @@ from LOTlib.Miscellaneous import log
 from LOTlib.Eval import RecursionDepthException
 from LOTlib.Hypotheses.Priors.LZPrior import *
 from optparse import OptionParser
+from progressbar import ProgressBar
 
 #############################################################################################
 #    Option Parser
@@ -114,6 +115,7 @@ with open(options.filename, 'r') as f:
 
 target = eval(options.family)
 
+print 'Making all the data . . .'
 huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
 zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for w in target.all_words()}
 zipf2data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=2, alpha=options.alpha) for w in target.all_words()}
@@ -123,9 +125,12 @@ zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=optio
 #    Evaluation Loop
 #############################################################################################
 
+bar = ProgressBar(max_value=len(hyps))
+
+print 'Evaluating the hypotheses . . .'
 results = []
 result_strings = []
-for s, h in enumerate(hyps):
+for s, h in bar(enumerate(hyps)):
     h.compute_likelihood(huge_data)
     h.point_ll = h.likelihood / len(huge_data)
     for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
