@@ -115,26 +115,34 @@ with open(options.filename, 'r') as f:
 
 target = eval(options.family)
 
-print 'Making all the data . . .'
-huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
-zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for w in target.all_words()}
-zipf2data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=2, alpha=options.alpha) for w in target.all_words()}
-zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=3, alpha=options.alpha) for w in target.all_words()}
+#print 'Making all the data . . .'
 
 #############################################################################################
 #    Evaluation Loop
 #############################################################################################
+import time
 
-print 'Evaluating the hypotheses . . .'
+t0 = time.time()
 results = []
 result_strings = []
-for s, h in enumerate(hyps):
-    h.compute_likelihood(huge_data)
-    h.point_ll = h.likelihood / len(huge_data)
-    for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
-        result = [s] + wrd
-        result_strings.append(', '.join(str(i) for i in result))
-        results.append(result)
+for i in xrange(100):
+    t1 = time.time()
+    print 'Run', i, 'Evaluating the hypotheses . . .', t1 - t0
+    huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
+    zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for
+                 w in target.all_words()}
+    zipf2data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=2, alpha=options.alpha) for
+                 w in target.all_words()}
+    zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=3, alpha=options.alpha) for
+                 w in target.all_words()}
+    for s, h in enumerate(hyps):
+        h.compute_likelihood(huge_data)
+        h.point_ll = h.likelihood / len(huge_data)
+        for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
+            result = [s] + wrd
+            result_strings.append(', '.join(str(i) for i in result))
+            results.append(result)
+    t0 = t1
 
 print "Writing csv file . . ."
 with open(options.out_path, 'w') as f:
