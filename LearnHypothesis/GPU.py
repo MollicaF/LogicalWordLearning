@@ -92,7 +92,7 @@ posterior_score = T.outer(T.dot(C, X)/pt, ones) + L/llt
 posterior = T.exp(posterior_score-T.log(T.sum(T.exp(posterior_score-T.max(posterior_score, axis=0)), axis=0))-T.max(posterior_score, axis=0))
 
 def binom(g, ll):
-    p = T.dot(posterior.T[g, :], R[g, :])
+    p = T.dot(posterior.T[g,:], R[g, :])
     p = 0.0001 + 0.9998 * p
     return ll + T.sum(T.log(p) * H[:, g] + T.log(1. - p) * (N[:, g] - H[:, g]))
 
@@ -108,7 +108,9 @@ def last(params):
     x  = np.array(params[0:30], dtype=config.floatX)
     lt = np.array(params[30], dtype=config.floatX)
     pt = np.array(params[31], dtype=config.floatX)
-    return human_ll(x,lt,pt)
+    a  = human_ll(x,lt,pt)
+    print a
+    return np.array(a, dtype="float64")
 
 gyx = gradient.jacobian(positive_ll, X)
 gyl = gradient.jacobian(positive_ll, llt)
@@ -123,16 +125,13 @@ def human_ll_grad(x):
     pt = np.array(x[31], dtype=config.floatX)
     res = human_grad(a,lt,pt)
     res = np.append(np.append(res[0], res[1]), res[2])
-    return res
+    print res
+    return np.array(res, dtype="float64")
 
-
-def hess(x):
-    return  human_hess(np.array(x, dtype=config.floatX))
 
 from scipy.optimize import minimize, fmin_tnc
 
 bounds = [(-np.inf, np.inf)] * 30 + [(0, np.inf)]*2
-print bounds
 
 print "## Loaded all the data and model."
 print "## Starting the ascent!!!"
@@ -143,7 +142,7 @@ best = np.zeros((Nsamples, 33))
 for i in xrange(Nsamples):
     print 'Starting run', i
     inp = dirichlet.rvs(np.ones(30))[0]
-    o = minimize(last, np.append(np.log(inp, dtype=config.floatX), [1., 1.]), jac=human_ll_grad, bounds=bounds, method="SLSQP")
+    o = minimize(last, np.append(np.log(inp, dtype=config.floatX), [1.1, 1.2]), jac=human_ll_grad, bounds=bounds, method="CG")
     if not o.success: print o.message
     else:
 	print 'Gradient', human_ll_grad(o.x)
