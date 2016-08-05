@@ -8,7 +8,7 @@ import numpy as np
 from numpy import dot, outer
 from scipy.misc import factorial
 from copy import copy
-from scipy.stats import dirichlet, norm, gamma
+from scipy.stats import dirichlet, norm, gamma, beta
 import time
 from LOTlib.Miscellaneous import sample1, flip
 
@@ -125,32 +125,41 @@ print "## Loaded all the data and model."
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Proposer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def propose(value, llt, pt, proposal_scale=1000, SMOOTHING=1e-6, sd=0.5):
+def propose(value, llt, pt, proposal_scale=10000, SMOOTHING=1e-6, sd=0.5):
     if flip(0.8):
         ret = copy(value)
 
         if len(value) == 1: return ret, 0.0  # handle singleton rules
 
         inx = sample1(range(0, len(value)))
+
         ret[inx] = np.random.beta(value[inx] * proposal_scale,
-                                           proposal_scale - value[inx] * proposal_scale)
+                                  proposal_scale - value[inx] * proposal_scale)
 
         # add a tiny bit of smoothing away from 0/1
-        ret[inx] = (1.0 - SMOOTHING) * ret[inx] + SMOOTHING / 2.0
-        v = sum(ret)
+        #ret[inx] = (1.0 - SMOOTHING) * ret[inx] + SMOOTHING / 2.0
 
+        ret = ret / sum(ret)
+        '''
+        ret[inx] = np.random.gamma(value[inx] * proposal_scale, 1./proposal_scale)
+        fb = gamma.logpdf(ret[inx], value[inx] * proposal_scale, 1./proposal_scale) + gamma.logpdf(v, 1) - \
+             gamma.logpdf(value[inx], ret[inx] * proposal_scale, 1./proposal_scale) - gamma.logpdf(1, v)
         fb = sum(gamma.logpdf(ret, value)) + gamma.logpdf(v, 1) - \
              sum(gamma.logpdf(value, ret)) - gamma.logpdf(1, v)
+        '''
+        fb = beta.logpdf(ret[inx], value[inx] * proposal_scale, proposal_scale - value[inx] * proposal_scale) - \
+             beta.logpdf(value[inx], ret[inx] * proposal_scale, proposal_scale - ret[inx] * proposal_scale)
 
-        # and renormalize it, slightly breaking MCMC
-        ret = ret / sum(ret)
         return ret, llt, pt, fb
     else:
         ret_lt = np.random.normal(llt, sd)
         ret_pt = np.random.normal(llt, sd)
 
-        fb = sum([norm.logpdf(ret_lt, llt, sd), norm.logpdf(ret_pt, pt, sd)]) - \
-             sum([norm.logpdf(llt, ret_lt, sd), norm.logpdf(pt, ret_pt, sd)])
+        if ret_lt <= 0 or ret_pt <=0:
+            fb = -np.Infinity
+        else:
+            fb = sum([norm.logpdf(ret_lt, llt, sd), norm.logpdf(ret_pt, pt, sd)]) - \
+                 sum([norm.logpdf(llt, ret_lt, sd), norm.logpdf(pt, ret_pt, sd)])
 
     return value, ret_lt, ret_pt, fb
 
@@ -181,6 +190,10 @@ for s, n in enumerate(xrange(Nsamples)):
         if s % options.skip == 0:
             samples.append((current_likelihood, current_value, current_lt, current_pt))
             print acc_count / (s+1), samples[-1]
+
+import pickle
+with open('hahaha.pkl', 'w') as f:
+    pickle.dump(samples, f)
 
 '''
 best = np.zeros((Nsamples, 33))
