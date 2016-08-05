@@ -192,8 +192,9 @@ for s, n in enumerate(xrange(Nsamples)):
             samples.append((current_likelihood, current_value, current_lt, current_pt))
             print acc_count / (s+1), samples[-1]
 
-import pickle
+res = np.zeros((len(samples), 33))
+for s, r in enumerate(samples):
+    res[s, :] = np.append(np.append(r[0], r[1]), [r[2], r[3]])
 
-with open(options.out_loc, 'w') as f:
-   pickle.dump(samples,f)
+np.savetxt(options.out_loc, res)
 
