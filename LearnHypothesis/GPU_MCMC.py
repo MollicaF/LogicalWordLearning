@@ -20,6 +20,7 @@ parser.add_option("--human", dest='data_loc', type='string', help="Generalizatio
                   default='human.data')
 parser.add_option("--model", dest="model_loc", type='string', help="Model Data Code Name",
                   default='FullSpace')
+parser.add_option("--out", dest="out_loc", type='string', help='Where to save the results', default='samples.pkl')
 parser.add_option("--samples", dest="samples", type="int", default=1000, help="Number of samples desired")
 parser.add_option("--skip", dest="skip", type="int", default=100, help="Number of samples desired")
 
@@ -182,20 +183,8 @@ for s, n in enumerate(xrange(Nsamples)):
             samples.append((current_likelihood, current_value, current_lt, current_pt))
             print acc_count / (s+1), samples[-1]
 
-'''
-best = np.zeros((Nsamples, 33))
-for i in xrange(Nsamples):
-    print 'Starting run', i
-    inp =
-    o = minimize(last, , jac=human_ll_grad, bounds=bounds)
-    if not o.success: print o.message
-    else:
-        print 'Gradient', human_ll_grad(o.x)
-        a = np.exp(o.x)
-        a = a / np.sum(a)
-        best[i,:] = np.append(a, -1*last(o.x))
+import pickle
 
-np.savetxt('SamplesMANGO.csv',best,delimiter=',')
+with open(options.out_loc, 'w') as f:
+   pickle.dump(samples,f)
 
-print 'Finished!'
-'''
