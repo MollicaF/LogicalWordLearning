@@ -126,7 +126,7 @@ print "## Loaded all the data and model."
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Proposer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def propose(value, llt, pt, proposal_scale=10000, SMOOTHING=1e-6, sd=0.5):
+def propose(value, llt, pt, proposal_scale=1000, SMOOTHING=1e-6, sd=0.5):
     if flip(0.8):
         ret = copy(value)
 
@@ -136,7 +136,7 @@ def propose(value, llt, pt, proposal_scale=10000, SMOOTHING=1e-6, sd=0.5):
 
         ret[inx] = np.random.beta(value[inx] * proposal_scale,
                                   proposal_scale - value[inx] * proposal_scale)
-
+        v = sum(ret)
         # add a tiny bit of smoothing away from 0/1
         #ret[inx] = (1.0 - SMOOTHING) * ret[inx] + SMOOTHING / 2.0
 
@@ -149,7 +149,7 @@ def propose(value, llt, pt, proposal_scale=10000, SMOOTHING=1e-6, sd=0.5):
              sum(gamma.logpdf(value, ret)) - gamma.logpdf(1, v)
         '''
         fb = beta.logpdf(ret[inx], value[inx] * proposal_scale, proposal_scale - value[inx] * proposal_scale) - \
-             beta.logpdf(value[inx], ret[inx] * proposal_scale, proposal_scale - ret[inx] * proposal_scale)
+             beta.logpdf(value[inx]/v, ret[inx] * proposal_scale, proposal_scale - ret[inx] * proposal_scale)
 
         return ret, llt, pt, fb
     else:
