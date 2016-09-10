@@ -76,20 +76,23 @@ class KinshipLexicon(RecursiveLexicon):
             else:
                 try:
                     if datum.context.ego is None:
-                        trueset = {w: self.make_word_data(w, datum.context) for w in self.all_words()}
+                        trueset = self.make_true_data(datum.context)
+                        #trueset = {w: self.make_word_data(w, datum.context) for w in self.all_words()}
+                        all_poss = len(self.all_words()) * len(datum.context.objects) ** 2
                     else:
-                        trueset = {w: self.make_word_data(w, datum.context, fixX=datum.context.ego)
-                                   for w in self.all_words()}
+                        trueset = self.make_true_data(datum.context, fixX=datum.context.ego)
+                        #trueset = {w: self.make_word_data(w, datum.context, fixX=datum.context.ego)
+                        #           for w in self.all_words()}
+                        all_poss = len(self.all_words())*len(datum.context.objects)
 
-                    all_poss = len(datum.context.objects)**2
                     constants[datum.context] = [trueset, all_poss]
                 except RecursionDepthException:
                     self.likelihood = -Infinity
                     self.update_posterior()
                     return self.likelihood
 
-            if (datum.word, datum.X, datum.Y) in trueset[datum.word]:
-                ll += log(self.alpha/len(trueset[datum.word]) + ((1.-self.alpha)/all_poss))
+            if (datum.word, datum.X, datum.Y) in trueset:
+                ll += log(self.alpha/len(trueset) + ((1.-self.alpha)/all_poss))
             else:
                 ll += log((1.-self.alpha)/all_poss)
 

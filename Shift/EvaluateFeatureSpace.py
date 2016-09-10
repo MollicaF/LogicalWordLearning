@@ -15,7 +15,7 @@ parser.add_option("--read", dest="input_loc", type="string", help="Pickled resul
                   default="Data/Baseline.pkl")
 parser.add_option("--pickle", dest="pkl_loc", type="string", help="Output a pkl", default=None)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
-                  default="results.csv")
+                  default="Results_PUK.csv")
 
 parser.add_option("--data", dest="data_size", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")

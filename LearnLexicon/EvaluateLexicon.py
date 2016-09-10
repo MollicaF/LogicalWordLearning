@@ -12,7 +12,7 @@ parser.add_option("--read", dest="input_loc", type="string", help="Pickled resul
                   default="pukapuka300.pkl")
 parser.add_option("--pickle", dest="pkl_loc", type="string", help="Output a pkl", default=None)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
-                  default="results.csv")
+                  default="Results_PUK.csv")
 parser.add_option("--family", dest="family", type="string", help="Family", default='english')
 parser.add_option("--indiv", dest='indiv', action='store_true', help='Assess hypotheses instead of lexicon?',
                   default=False)

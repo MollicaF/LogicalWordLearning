@@ -1,11 +1,13 @@
 import pickle
+import numpy as np
 from Model import *
-from Model.Givens import turkish, english, pukapuka, four_gen_tree_context
+from Model.Givens import turkish, english, pukapuka, four_gen_tree_context, four_gen_tree_objs
 from fractions import Fraction
 from LOTlib.Miscellaneous import log
 from LOTlib.Eval import RecursionDepthException
 from LOTlib.Hypotheses.Priors.LZPrior import *
 from optparse import OptionParser
+from LOTlib.Inference.GrammarInference.Precompute import create_counts
 #from progressbar import ProgressBar
 
 #############################################################################################
@@ -13,9 +15,9 @@ from optparse import OptionParser
 #############################################################################################
 parser = OptionParser()
 parser.add_option("--read", dest="filename", type="string", help="Pickled results",
-                  default="PukaPuka/Mixing/MixedPukapuka.pkl")
+                  default="PukaPuka/Mixing/Mixed2Puka.pkl")
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
-                  default="results.csv")
+                  default="Results_PUK.csv")
 parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
@@ -35,13 +37,26 @@ four_gen_tree_context.distance = {'Amanda': 6, 'Anne': 33, 'aragorn': 9, 'Arwen'
              'Katniss': 2, 'legolas': 26, 'Leia': 25, 'Lily': 31, 'luke': 23, 'Luna': 27, 'Mellissa': 19, 'merry': 10,
              'Padme': 24,'peeta': 1, 'Prue': 5, 'ron': 20, 'Rose': 11, 'Sabrina': 3, 'salem': 16, 'sam': 12, 'Zelda': 7}
 
-def compute_recurse_prior(lex):
-    s = ''.join([lex.value[w].grammar.pack_ascii(lex.value[w].value) for w in lex.all_words()])
-    # 1+ since it must be positive
-    bits = ''.join([integer2bits(1 + pack_string.index(x)) for x in s])
-    c = encode(bits, pretty=0)
+from scipy.special import beta
+def multdir(counts, alpha):
+    n  = np.sum(counts, axis=1)
+    a0 = np.sum(alpha)
+    numerator   = np.log(n * beta(a0, n))
+    denominator = [np.sum([np.log(x * beta(a, x)) for x, a in zip(c, alpha) if x > 0]) for c in counts]
+    return numerator - denominator
 
-    return -len(c)
+grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
+
+
+def compute_reuse_prior(lex):
+    counts = create_counts(grammar, [lex.value[w] for w in lex.all_words()])[0]
+    prior =0.0
+    for k in counts.keys():
+        c = np.sum(counts[k], axis=0)
+        prior += multdir([c], np.ones(len(c))/float(len(c)))[0]
+
+    return prior
+
 
 def compute_Zipf_likelihood(lexicon, data, s):
     constants = dict()
@@ -99,11 +114,11 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
                          hypothesis.value[w].compute_prior(),                                   # Hypothesis Prior
                          hypothesis.compute_word_likelihood(data, w)/float(len(data)),          # Hypothesis Likelihood
                          hypothesis.prior,                                                      # Lexicon Prior
-                         compute_recurse_prior(hypothesis),                                     # Recursive Prior
+                         compute_reuse_prior(hypothesis),                                     # Recursive Prior
                          hypothesis.point_ll,                                                   # Lexicon Likelihood
-                         compute_Zipf_likelihood(hypothesis, zipf1data[w], 1)/float(len(data)), # Zipf1 Likelihood
-                         compute_Zipf_likelihood(hypothesis, zipf2data[w], 2)/float(len(data)), # Zipf2 Likelihood
-                         compute_Zipf_likelihood(hypothesis, zipf3data[w], 3)/float(len(data)), # Zipf3 Likelihood
+                         #compute_Zipf_likelihood(hypothesis, zipf1data[w], 1)/float(len(data)), # Zipf1 Likelihood
+                         #compute_Zipf_likelihood(hypothesis, zipf2data[w], 2)/float(len(data)), # Zipf2 Likelihood
+                         #compute_Zipf_likelihood(hypothesis, zipf3data[w], 3)/float(len(data)), # Zipf3 Likelihood
                          correct_count,                                                         # No. Correct Objects
                          len(hypothesized_word_data),                                           # No. Proposed Objects
                          len(true_word_data)])                                                  # No. True Objects
@@ -120,29 +135,25 @@ target = eval(options.family)
 #############################################################################################
 #    Evaluation Loop
 #############################################################################################
-import time
-
-t0 = time.time()
 results = []
 result_strings = []
-for i in xrange(100):
-    t1 = time.time()
-    print 'Run', i, 'Evaluating the hypotheses . . .', t1 - t0
-    huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
-    zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for
-                 w in target.all_words()}
-    zipf2data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=2, alpha=options.alpha) for
-                 w in target.all_words()}
-    zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=3, alpha=options.alpha) for
-                 w in target.all_words()}
-    for s, h in enumerate(hyps):
-        h.compute_likelihood(huge_data)
-        h.point_ll = h.likelihood / len(huge_data)
-        for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
-            result = [s] + wrd
-            result_strings.append(', '.join(str(i) for i in result))
-            results.append(result)
-    t0 = t1
+
+huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
+
+#zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for
+#             w in target.all_words()}
+#zipf2data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=2, alpha=options.alpha) for
+#             w in target.all_words()}
+#zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=3, alpha=options.alpha) for
+#             w in target.all_words()}
+
+for s, h in enumerate(hyps):
+    h.compute_likelihood(huge_data)
+    h.point_ll = h.likelihood / len(huge_data)
+    for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
+        result = [s] + wrd
+        result_strings.append(', '.join(str(i) for i in result))
+        results.append(result)
 
 print "Writing csv file . . ."
 with open(options.out_path, 'w') as f:
