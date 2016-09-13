@@ -16,7 +16,7 @@ with open(options.filename, 'r') as f:
     hyps = pickle.load(f)
 
 #######################################################################
-bootstrap = 1
+bootstrap = 1000
 
 four_gen_tree_context.distance = {'Amanda': 6, 'Anne': 33, 'aragorn': 9, 'Arwen': 14, 'Brandy': 13, 'Celebrindal': 37,
                                   'Clarice': 18, 'elrond': 36, 'Eowyn': 21, 'fabio': 29, 'fred': 32, 'frodo': 4,
@@ -96,7 +96,10 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
                 correct_count += 1
         out = [w]
         out.append(int(len(true_word_data) == len(hypothesized_word_data) and len(true_word_data) == correct_count))
-        out.append(float(correct_count)/len(hypothesized_word_data))
+        if len(hypothesized_word_data) > 0:
+            out.append(float(correct_count)/len(hypothesized_word_data))
+        else:
+            out.append(0.)
         out.append(float(correct_count)/len(true_word_data))
         out.append(do_I_abstract(hypothesis.value[w]))
         output.append(out)
