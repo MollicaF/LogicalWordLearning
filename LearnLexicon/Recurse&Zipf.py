@@ -92,11 +92,15 @@ def compute_Zipf_likelihood(lexicon, data, s):
     return ll / lexicon.likelihood_temperature
 
 
+def do_I_abstract(h):
+    return int( 'X' in [x.name for x in h.value.subnodes()])
+
 def assess_inv_hyp(hypothesis, target_lexicon, context):
     findings = []
     ground_truth = target_lexicon.make_true_data(context)
     hypothesized_lexicon_data = hypothesis.make_true_data(context)
     for w in target_lexicon.all_words():
+        abstract = do_I_abstract(hypothesis.value[w])
         data = [dp for dp in huge_data if dp.word == w]
         hypothesized_word_data = set()
         for dp in hypothesized_lexicon_data:
@@ -121,7 +125,8 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
                          #compute_Zipf_likelihood(hypothesis, zipf3data[w], 3)/float(len(data)), # Zipf3 Likelihood
                          correct_count,                                                         # No. Correct Objects
                          len(hypothesized_word_data),                                           # No. Proposed Objects
-                         len(true_word_data)])                                                  # No. True Objects
+                         len(true_word_data),
+                         abstract])                                                  # No. True Objects
     return findings
 
 

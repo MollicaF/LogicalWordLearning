@@ -78,7 +78,7 @@ def makeRandomData(context, word='Word', n=3, ego=None, verbose=False):
     return data
 
 
-def makeZipfianLexiconData(lexicon, word, context, n=100, s=1.0, alpha=0.9, verbose=False):
+def makeZipfianLexiconData(lexicon, word, context, n=100, s=1.0, alpha=0.9, verbose=False): # TODO remove word param from Shift files
     data = []
     true_set = lexicon.make_true_data(context)
     all_poss_speakers = [ t[1] for t in true_set ]
@@ -87,13 +87,22 @@ def makeZipfianLexiconData(lexicon, word, context, n=100, s=1.0, alpha=0.9, verb
     for i in xrange(n):
         if flip(alpha):
             speaker = weighted_sample(all_poss_speakers, probs=p)
-            referents = lexicon(word, context, set([speaker]))
-            p1 = [ zipf(t, s, context, len(context.objects)) for t in referents ]
-            referent = weighted_sample(referents, probs=p1)
+
+            bagR = {w : lexicon(w, context, set([speaker])) for w in lexicon.all_words()}
+            uniqR = []
+            for w in lexicon.all_words():
+                uniqR.extend(bagR[w])
+
+            p1 = [ zipf(t, s, context, len(context.objects)) for t in uniqR ]
+            referent = weighted_sample(uniqR, probs=p1)
+
+            word = sample1([w for w in lexicon.all_words() if referent in bagR[w]])
+
             if verbose:
                 print "True data:", i, word, speaker, referent
             data.append(KinshipData(word, speaker, referent, context))
         else:
+            word = sample1(lexicon.all_words())
             x = sample1(context.objects)
             y = sample1(context.objects)
             if verbose:
