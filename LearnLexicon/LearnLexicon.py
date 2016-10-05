@@ -183,6 +183,9 @@ def run(data_amount):
     mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
+        print samples_yielded, h.prior, \
+            h.likelihood, \
+            h
         hyps.add(h)
 
     import pickle
@@ -211,9 +214,9 @@ for fs in break_ctrlc(MPI_map(run, numpy.random.permutation(argarray), progress_
                     h.likelihood, \
                     h \
 
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
-sys.stdout.flush()
+#sys.stdout.flush()
 
 import pickle
 with open(options.out_path, 'w') as f:

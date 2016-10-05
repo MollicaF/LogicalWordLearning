@@ -178,7 +178,11 @@ def makeBiasedGrammar(objects, nterms=['Tree', 'Set', 'Gender', 'Generation', 'A
 if __name__ == "__main__":
 
     my_grammar = makeGrammar(['Mira','Snow','charming','rump','neal','baelfire','Emma','Regina','henry','Maryann','ego'],
-                             compositional=False, terms=['X','objects'])
+                             compositional=True, terms=['X','objects','all'], nterms=['Tree', 'Set', 'Gender'],
+                             recursive=True, words=['mother','father','brother'])
 
-    for _ in xrange(10):
-        print my_grammar.generate()
+
+    print my_grammar
+
+    inx = my_grammar.sig2idx()
+    print [(inx[k], k[2]) for k in inx.keys() if k[1] == 'recurse_' and k[2]=="'mother'"]

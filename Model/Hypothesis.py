@@ -3,7 +3,10 @@ from LOTlib.Hypotheses.Lexicon.RecursiveLexicon import RecursiveLexicon
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.Eval import EvaluationException, RecursionDepthException
 from Utilities import reachable
+from LOTlib.Miscellaneous import q, Infinity
+from LOTlib.Inference.GrammarInference.Precompute import create_counts
 from Grammar import makeGrammar
+import numpy as np
 
 default_grammar = makeGrammar([])
 
@@ -69,7 +72,7 @@ class KinshipLexicon(RecursiveLexicon):
     def compute_likelihood(self, data, **kwargs):
         constants = dict()
         ll = 0
-        for datum in data:
+        for di, datum in enumerate(data):
             if datum.context in constants.keys():
                 trueset = constants[datum.context][0]
                 all_poss = constants[datum.context][1]
@@ -87,6 +90,13 @@ class KinshipLexicon(RecursiveLexicon):
 
                     constants[datum.context] = [trueset, all_poss]
                 except RecursionDepthException:
+                    self.likelihood = -Infinity
+                    self.update_posterior()
+                    return self.likelihood
+
+            # Check to see if you can recurse and if that matters
+            if di == 0:
+                if not self.canIrecurse(data, trueset):
                     self.likelihood = -Infinity
                     self.update_posterior()
                     return self.likelihood
@@ -139,30 +149,46 @@ class KinshipLexicon(RecursiveLexicon):
                 trueset.add((word, fixX, y))
         return trueset
 
+    def canIrecurse(self, data, trueset):
+        d = [(datum.word, datum.X, datum.Y) for datum in data]
 
-'''
-    def compute_likelihood(self, data, **kwargs):
-        context = data[0].context # Hack assuming you have the same context for all datapoints
+        hyps = [self.value[w] for w in self.all_words()]
         try:
-            if context.ego is None:
-                trueset = self.make_true_data(context)
-            else:
-                trueset = self.make_true_data(context, fixX=context.ego)
+            grammar = hyps[0].grammar
+        except:
+            return True # Because if it doesn't have a grammar it's a force function
+        counts, inx, _ = create_counts(grammar, hyps)
+        counts = np.sum(counts['SET'], axis=0)
+        relinx = [(k[2], inx[k]) for k in inx.keys() if k[1] == 'recurse_']
 
-            all_poss = len(self.all_words())*len(context.objects)**2
+        F1s = []
+        for wi, w in enumerate(self.all_words()):
+            wd = [dp for dp in d if dp[0] == w] # Word Data
+            pw = [dp for dp in trueset if dp[0] == w] # Proposed Word Data
+            pId = [dp for dp in pw if dp in wd] # Proposed Word Data Observed
+            precision = float(len(pId)) / float(len(pw) + 1e-6)
+            recall = float(len(pId)) / float(len(wd) + 1e-6)
+            f1 = (2.*precision*recall) / (precision + recall + 1e-6)
+            i = [ri[1] for ri in relinx if ri[0] == q(w)]
+            F1s.append((counts[i], w, f1))
+            if counts[i] >= 1 and f1 <= self.alpha:
+                return False
+        print F1s
 
-            ll = 0
-            for datum in data:
-                if (datum.word, datum.X, datum.Y) in trueset:
-                    ll += log(self.alpha/len(trueset) + ((1.-self.alpha)/all_poss))
-                else:
-                    ll += log((1.-self.alpha)/all_poss)
+        return True
 
-            self.likelihood = ll / self.likelihood_temperature
+if __name__ == "__main__":
 
-        except RecursionDepthException:
-            self.likelihood = -Infinity
+    from Model.Givens import english_words, four_gen_tree_context, english
+    from Model.Data import makeLexiconData
+    from Grammar import makeGrammar
+    rgrammar = makeGrammar(['Mira','Snow','charming','rump','neal','baelfire','Emma','Regina','henry','Maryann','ego'],
+                             compositional=True, terms=['X','objects','all'], nterms=['Tree', 'Set', 'Gender'],
+                             recursive=True, words=english_words)
+    data = makeLexiconData(english, four_gen_tree_context)
+    h0 = KinshipLexicon(alpha=0.9)
+    for w in english_words:
+        h0.set_word(w, LOTHypothesis(rgrammar, display='lambda recurse_, C, X: %s'))
 
-        self.update_posterior()
-        return self.likelihood
-'''
+    tru = h0.make_true_data(four_gen_tree_context)
+    print h0.canIrecurse(data, tru)
