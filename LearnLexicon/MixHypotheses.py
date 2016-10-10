@@ -101,7 +101,7 @@ print '## Loaded', len(hypothesis_space), 'hypotheses.'
 
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
-my_grammar = makeGrammar(four_gen_tree_objs, words=turkish_words,
+my_grammar = makeGrammar(four_gen_tree_objs, words=english_words,
                          nterms=grammar_set)
 
 def normalize(damount):
