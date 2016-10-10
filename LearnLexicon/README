@@ -1,0 +1,11 @@
+LearnLexicon.py 
+    populates a kinship lexicon space using Metropolis-Hastings. In the limit of samples, the lexicon space will contain the true lexicon; however, that is often costly so we stop early. The resulting lexicon space often contains partially correct lexicons.
+
+MixHypotheses.py 
+    takes the unique hypotheses from a lexicon space and mixes them using Gibbs Sampling. The resulting lexicon space is overall more likely correct reflecting more plausible lexicons than the result of the original MCMC.
+    
+TopMass.py 
+    takes the output of both of the above searches and filters the space to reflect only the top mass at varying data amounts. This is useful in reducing the space to a manageable size, while ensuring that the lexicons most likely to be considered at any amount of data are represented.
+
+EvaluateLexicon.py
+    calculates relevant statistics for a hypothesis space that can be used to vizualize growth or test specific hypotheses such as abstraction. The variables include: likelihood per data point and prior for both lexicons and individual hypotheses, # referents proposed, # correct referents proposed, # ground truth referents and boolean value for abstraction.
