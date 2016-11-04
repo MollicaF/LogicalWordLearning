@@ -165,15 +165,14 @@ class KinshipLexicon(RecursiveLexicon):
         for wi, w in enumerate(self.all_words()):
             wd = [dp for dp in d if dp[0] == w] # Word Data
             pw = [dp for dp in trueset if dp[0] == w] # Proposed Word Data
-            pId = [dp for dp in pw if dp in wd] # Proposed Word Data Observed
-            precision = float(len(pId)) / float(len(pw) + 1e-6)
+            pId = [dp for dp in wd if dp in pw] # Proposed Word Data Observed
+            precision = float(len(set(pId))) / float(len(pw) + 1e-6)
             recall = float(len(pId)) / float(len(wd) + 1e-6)
             f1 = (2.*precision*recall) / (precision + recall + 1e-6)
             i = [ri[1] for ri in relinx if ri[0] == q(w)]
-            F1s.append((counts[i], w, f1))
-            if counts[i] >= 1 and f1 <= self.alpha:
+            F1s.append((counts[i], w, f1, precision, recall))
+            if counts[i] >= 1 and f1 <= self.alpha * 2./ 3.:
                 return False
-        print F1s
 
         return True
 

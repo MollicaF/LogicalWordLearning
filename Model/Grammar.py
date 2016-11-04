@@ -67,7 +67,7 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
 
     if recursive and words is not None:
         for w in words:
-            grammar.add_rule('SET', 'recurse_', [q(w), 'C', 'SET'], 1.0/len(words))
+            grammar.add_rule('SET', 'recurse_', [q(w), 'C', 'SET'], 1.0)
 
     if 'objects' in terms:
         if compositional:

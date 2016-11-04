@@ -10,7 +10,9 @@ parser = OptionParser()
 parser.add_option("--read", dest="filename", type="string", help="Pickled results",
                   default="PukaPuka/Mixing/Mixed2Puka.pkl")
 parser.add_option("--read2", dest="filename2", type="string", help="Pickled results",
-                  default="PukaPuka/Mixing/Mixed2Puka.pkl")
+                  default=None)
+parser.add_option("--topN", dest="Nsize", type="int", help="Number of hypotheses to save",
+                  default=1000)
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="Results_PUK.csv")
 parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
@@ -46,17 +48,18 @@ print "Loading Space 1: " + options.filename
 with open(options.filename, 'r') as f:
     d.update(pickle.load(f))
 
-print "Loading Space 2: " + options.filename2
-with open(options.filename2, 'r') as f:
-    d.update(pickle.load(f))
+if options.filename2 is not None:
+    print "Loading Space 2: " + options.filename2
+    with open(options.filename2, 'r') as f:
+        d.update(pickle.load(f))
 
 Mass = set()
 
 for a in range(1, 25, 2) + range(25, 251, 25):
-    print "Grabbing Top 1000 from " + str(a) + ' dp'
+    print "Grabbing Top " + str(options.Nsize) + " from " + str(a) + ' dp'
     data = makeLexiconData(target, four_gen_tree_context, n=a)
-    simplicity_mass = TopN(N=1000)
-    reuse_mass = TopN(N=1000)
+    simplicity_mass = TopN(N=options.Nsize)
+    reuse_mass = TopN(N=options.Nsize)
     for h in d:
         h.posterior_score = h.compute_likelihood(data) + compute_reuse_prior(h)
         reuse_mass.add(h)
