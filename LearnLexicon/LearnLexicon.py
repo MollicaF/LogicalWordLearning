@@ -156,6 +156,7 @@ elif options.family == 'informant2':
     target = english
     target_words = english_words
     four_gen_tree_context = Info2_tree_context
+    four_gen_tree_context.ego = None # So we do not run an egocentric version here
     if options.Prior is None:
         my_grammar = makeGrammar(Info2_obj, words=english_words,
                                  nterms=grammar_set, recursive=options.recurse)
