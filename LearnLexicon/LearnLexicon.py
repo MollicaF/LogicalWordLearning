@@ -137,23 +137,30 @@ elif options.family == 'crow':
                                        nterms=grammar_set, recursive=options.recurse)
 
 elif options.family == 'english':
-
     from Model.Givens import english, four_gen_tree_context, english_words, four_gen_tree_objs
 
     target = english
-
     target_words = english_words
-
     if options.Prior is None:
-
         my_grammar = makeGrammar(four_gen_tree_objs, words=english_words,
-
                                  nterms=grammar_set, recursive=options.recurse)
-
     else:
-
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=english_words,
+                                       nterms=grammar_set, recursive=options.recurse)
 
+
+elif options.family == 'informant2':
+    from Model.Givens import english, english_words
+    from Shift.FeatureGiven import Info2_tree_context, Info2_obj
+
+    target = english
+    target_words = english_words
+    four_gen_tree_context = Info2_tree_context
+    if options.Prior is None:
+        my_grammar = makeGrammar(Info2_obj, words=english_words,
+                                 nterms=grammar_set, recursive=options.recurse)
+    else:
+        my_grammar = makeBiasedGrammar(Info2_obj, words=english_words,
                                        nterms=grammar_set, recursive=options.recurse)
 
 else:
