@@ -18,6 +18,7 @@ parser.add_option("--read", dest="filename", type="string", help="Pickled result
                   default="PukaPuka/Mixing/Mixed2Puka.pkl")
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="Results_PUK.csv")
+parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
 parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
@@ -28,6 +29,8 @@ parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise
 #############################################################################################
 #    Functions and Things
 #############################################################################################
+
+target = eval(options.family)
 
 # For the Zipfian learner we assume egocentrism around peeta
 
@@ -45,7 +48,11 @@ def multdir(counts, alpha):
     denominator = [np.sum([np.log(x * beta(a, x)) for x, a in zip(c, alpha) if x > 0]) for c in counts]
     return numerator - denominator
 
-grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
+if options.recurse:
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
+                          recursive=True, words=target.all_words())
+else:
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
 
 
 def compute_reuse_prior(lex):
@@ -133,7 +140,6 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
 with open(options.filename, 'r') as f:
     hyps = pickle.load(f)
 
-target = eval(options.family)
 
 #print 'Making all the data . . .'
 

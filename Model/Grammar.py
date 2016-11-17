@@ -3,7 +3,7 @@ from LOTlib.Miscellaneous import q
 
 
 def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity', 'English'],
-                terms=['X', 'objects', 'all'], recursive=False, words=None, compositional=True):
+                terms=['X', 'objects', 'all'], recursive=False, words=None, compositional=True, abstractP=10.0):
     """
     Define a grammar for tree relations
     """
@@ -72,10 +72,10 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
     if 'objects' in terms:
         if compositional:
             for o in objects:
-                grammar.add_rule('SET', 'set', ["[\'%s\']" % o], 1.00/len(objects))
+                grammar.add_rule('SET', 'set', ["[\'%s\']" % o], abstractP/len(objects))
         else:
             for o in objects:
-                grammar.add_rule('O', 'set', ["[\'%s\']" % o], 1.00/len(objects))
+                grammar.add_rule('O', 'set', ["[\'%s\']" % o], abstractP/len(objects))
 
     if 'all' in terms:
         grammar.add_rule('SET', 'all_', ['C'], 1.0)
