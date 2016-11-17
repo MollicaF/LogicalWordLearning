@@ -23,6 +23,7 @@ parser.add_option("--family", dest="family", type="string", help="Family", defau
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
 parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise value")
+parser.add_option("--datafile", dest="datafile", type='str', default=None, help="Where is the data?")
 
 (options, args) = parser.parse_args()
 
@@ -149,7 +150,11 @@ with open(options.filename, 'r') as f:
 results = []
 result_strings = []
 
-huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
+if options.datafile is None:
+    huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
+else:
+    with open(options.datafile, 'r') as f:
+        huge_data = pickle.load(f)
 
 #zipf1data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=1, alpha=options.alpha) for
 #             w in target.all_words()}
