@@ -16,10 +16,17 @@ parser.add_option("--topN", dest="Nsize", type="int", help="Number of hypotheses
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="Results_PUK.csv")
 parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
+parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
 
 (options, args) = parser.parse_args()
 
 target = eval(options.family)
+
+if options.recurse:
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
+                          recursive=True, words=target.all_words())
+else:
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
 
 from scipy.special import beta
 def multdir(counts, alpha):
@@ -28,8 +35,6 @@ def multdir(counts, alpha):
     numerator   = np.log(n * beta(a0, n))
     denominator = [np.sum([np.log(x * beta(a, x)) for x, a in zip(c, alpha) if x > 0]) for c in counts]
     return numerator - denominator
-
-grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
 
 
 def compute_reuse_prior(lex):
