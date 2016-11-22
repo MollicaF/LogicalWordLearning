@@ -17,7 +17,6 @@ class KinshipData:
 class KinshipContext:
     def __init__(self, objects, relations, ego=None):
 
-        self.__dict__.update(locals())
         self.ego = ego
         self.objects = objects
 

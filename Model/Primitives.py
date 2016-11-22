@@ -163,7 +163,7 @@ def generation0_(X, C):
 def generation1_(X, C):
     if len(X) != 1:
         return set()
-    return parents_of_(generation0_(X, C), C)
+    return union_(children_of_(parents_of_(parents_of_(X, C), C), C), spouses_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C))
 
 @primitive
 def generation2_(X, C):
