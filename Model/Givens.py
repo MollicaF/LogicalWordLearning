@@ -82,6 +82,13 @@ target.force_function('uncles/aunts', lambda recurse_, C, X: union_(
 target.force_function('grandparents', lambda recurse_, C, X: parents_of_(parents_of_(X, C), C))
 target.force_function('cousins', lambda recurse_, C, X: children_of_(recurse_('siblings', C, parents_of_(X, C)), C))
 
+# Individual English Words
+
+aunt = KinshipLexicon(words=['aunt'])
+aunt.force_function('aunt', lambda recurse_, C, X: female_(union_(
+    setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)),
+    spouses_of_(setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)), C))))
+
 uncle = KinshipLexicon(words=['uncle'])
 uncle.force_function('uncle', lambda recurse_, C, X: male_(union_(
     setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C), parents_of_(X, C)),
@@ -90,11 +97,24 @@ uncle.force_function('uncle', lambda recurse_, C, X: male_(union_(
 mother = KinshipLexicon(words=['mother'])
 mother.force_function('mother', lambda recurse_, C, X: female_(parents_of_(X, C)))
 
+father = KinshipLexicon(words=['father'])
+father.force_function('father', lambda recurse_, C, X: male_(parents_of_(X, C)))
+
 brother = KinshipLexicon(words=['brother'])
 brother.force_function('brother', lambda recurse_, C, X: male_(setdifference_(children_of_(parents_of_(X, C), C), X)))
 
+sister = KinshipLexicon(words=['sister'])
+sister.force_function('sister', lambda recurse_, C, X: female_(setdifference_(children_of_(parents_of_(X, C), C), X)))
+
 grandma = KinshipLexicon(words=['grandma'])
 grandma.force_function('grandma', lambda recurse_, C, X: female_(parents_of_(parents_of_(X, C), C)))
+
+grandpa = KinshipLexicon(words=['grandpa'])
+grandpa.force_function('grandpa', lambda recurse_, C, X: male_(parents_of_(parents_of_(X, C), C)))
+
+cousin = KinshipLexicon(words=['cousin'])
+cousin.force_function('cousin', lambda recurse_, C, X: children_of_(setdifference_(children_of_(parents_of_(
+    parents_of_(X, C), C), C), parents_of_(X, C)), C))
 
 #   Gendered English
 

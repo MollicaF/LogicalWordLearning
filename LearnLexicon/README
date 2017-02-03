@@ -9,3 +9,13 @@ TopMass.py
 
 EvaluateLexicon.py
     calculates relevant statistics for a hypothesis space that can be used to vizualize growth or test specific hypotheses such as abstraction. The variables include: likelihood per data point and prior for both lexicons and individual hypotheses, # referents proposed, # correct referents proposed, # ground truth referents and boolean value for abstraction.
+
+ContinueLearning.py
+    takes a hypothesis space and runs an additional search starting a chain for each hypothesis
+
+
+Nomenclature for files
+COMBO_LAN.pkl == LearnMix
+REC_LAN.pkl   == Continue learning recursive COMBO_LAN.pkl
+fsREU_LAN.pkl == TopMass of COMBO_LAN.pkl
+fsREC_LAN.pkl == TopMass of COMBO_LAN.pkl + REC_LAN.pkl

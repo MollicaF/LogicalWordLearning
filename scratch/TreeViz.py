@@ -70,7 +70,7 @@ def compileSVG(paths, w=480, h=340,
 ####################################################################################
 # Probability Function
 ####################################################################################
-def color2(value, minimum=0, maximum=1):
+def color(value, minimum=0, maximum=1):
     minimum, maximum = float(minimum), float(maximum)
     ratio = 2 * (value-minimum) / (maximum - minimum)
     b = int(max(0, 255*(1 - ratio)))
@@ -78,7 +78,7 @@ def color2(value, minimum=0, maximum=1):
     g = 255 - b - r
     return '#%02x%02x%02x' % (r, g, b)
 
-def color(s):
+def color2(s):
     return 'white'
 
 def plot_svg(filename, p):
@@ -140,7 +140,7 @@ def plot_fulltree(fylename, p, n=None):
     Merry = man(910, 290, color(p[27]))
     Padme = woman(1270, 410, color(p[28]))
     Peeta = man(790, 410, color(p[29]))
-    Prue = woman(670, 410, color(p[30]))#fill='black', stroke='black')
+    Prue = woman(670, 410, fill='black', stroke='black') #color(p[30]))
     Ron = man(550, 170, color(p[31]))
     Rose = woman(910, 410, color(p[32]))
     Sabrina = woman(610, 290, color(p[33]))
@@ -188,22 +188,24 @@ def plot_fulltree(fylename, p, n=None):
         svg = compileSVG(path, w=1320, h=510, text="N:" + "%03d"%n)
     else:
         svg = compileSVG(path, w=1320, h=510)
-    with open('SVGs/' + fylename + '.svg', 'w') as f:
+    with open('PaperFigs/SVGs/' + fylename + '.svg', 'w') as f:
         f.write(svg)
 
-if False:
+if True:
     files = ['Reuse_aunt', 'Reuse_father', 'Reuse_cousin', 'Reuse_uncle', 'Reuse_grandma', 'Reuse_grandpa', 'Reuse_mother',
              'Reuse_sister','Simplicity_aunt', 'Simplicity_father', 'Simplicity_cousin', 'Simplicity_uncle',
              'Simplicity_grandma', 'Simplicity_grandpa', 'Simplicity_mother', 'Simplicity_sister']
 
+    files = ['Simplicity_uncle']
+
     for fyle in files:
-        probs = np.loadtxt('VizPF/' + fyle + '.csv', delimiter=',')
+        probs = np.loadtxt('PaperFigs/' + fyle + '.csv', delimiter=',')
         for n, p in enumerate(probs):
             if n < 200:
                 plot_fulltree(fyle+'_'+"%03d"%n, p, n)
 
 
-if True:
+if False:
     probs = [float(o in ['']) for o in four_gen_tree_context.objects]
     print probs
     plot_fulltree('Context',probs,0)

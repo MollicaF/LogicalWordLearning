@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
 from Model import *
-from Model.Givens import turkish, english, pukapuka, four_gen_tree_context, four_gen_tree_objs
+from Model.Givens import *
+#from Model.Givens import turkish, english, pukapuka, four_gen_tree_context, four_gen_tree_objs
 from fractions import Fraction
 from LOTlib.Miscellaneous import log
 from LOTlib.Eval import RecursionDepthException
@@ -65,6 +66,23 @@ def compute_reuse_prior(lex):
 
     return prior
 
+def compute_word_ll(word, h, data):
+    data = [dp for dp in data if dp.word == word]
+    if len(data) == 0:
+        return 0
+    context = data[0].context
+    trueset = set()
+    for x in context.objects:
+        for y in h('', context, set([x])):  # x must be a set here
+            trueset.add((word, x, y))
+    all_poss = len(context.objects) ** 2
+    ll = 0
+    for datum in data:
+        if (datum.word, datum.X, datum.Y) in trueset:
+            ll += log(options.alpha / len(trueset) + ((1. - options.alpha) / all_poss))
+        else:
+            ll += log((1. - options.alpha) / all_poss)
+    return ll
 
 def compute_Zipf_likelihood(lexicon, data, s):
     constants = dict()
@@ -123,7 +141,7 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
             if dp in true_word_data:
                 correct_count += 1
         findings.append([w,                                                                     # Word
-                         hypothesis.value[w].compute_prior(),                                   # Hypothesis Prior
+                         hypothesis.value[w].compute_prior(),                                   # Hypothesis Prior grammar.log_probability(hypothesis.value[w].value)
                          hypothesis.compute_word_likelihood(data, w)/float(len(data)),          # Hypothesis Likelihood
                          hypothesis.prior,                                                      # Lexicon Prior
                          compute_reuse_prior(hypothesis),                                     # Recursive Prior

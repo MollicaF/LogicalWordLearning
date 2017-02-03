@@ -7,3 +7,5 @@ Mollica & Piantadosi (2015). Towards semantically rich and recursive word learni
 http://colala.bcs.rochester.edu/papers/mollica2015towards.pdf
 
 Mollica, Wade & Piantadosi (submitted). A Rational Constructivist Account of the Characteristic-to-Defining Shift.
+
+Mollica, Piantadosi (in prep). Logical Word Learning: The Case of Kinship.

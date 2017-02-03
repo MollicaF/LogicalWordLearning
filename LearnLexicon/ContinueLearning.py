@@ -15,7 +15,7 @@ from optparse import OptionParser
 ######################################################################################################
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
-parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=True) # False
+parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False) # False
 parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='english')
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="EnglishRecurse.pkl")

@@ -48,7 +48,7 @@ marg_stats <- function(df, amount, lt) {
 }
 
 find_min = function(df, lim=0.99, meas='Accuracy'){
-  min(df$amount[df$value >= lim & df$variable==meas])
+  min(df$amount[df$value >= lim & df$variable==meas], na.rm=T)
 }
 
 ```
@@ -57,7 +57,7 @@ find_min = function(df, lim=0.99, meas='Accuracy'){
 
 ```{r, english}
 
-eng = read.csv('NEW_COMBO_ENG.csv', header = F)
+eng = read.csv('TurkishRecurse.csv', header = F)
 colnames(eng) = c('HypNo', 'Word', 'HPrior', 'HLike', 'LPrior', 'RPrior', 'LLike', 'Correct', 'Proposed', 'Truth', 'A')
 
 eng$ACC = 0
@@ -77,10 +77,13 @@ eng = merge(eng, la)
 message(paste0('Percent Accurate Lexicons: ', round(100*sum(la$LA)/dim(la)[1],2), '%'))
 
 data = NULL
-for (amt in seq(0, 700, 1)) {
+for (amt in seq(0, 1000, 10)) {
   k = ddply(eng, .(Word), function(Z) {exp_stats(Z, amt, 1)})
   data = rbind(data, k)
 }
+
+data$F1 = with(data, (2*Precision*Recall)/(Precision+Recall))
+data$F1[is.nan(data$F1)] = 0
 
 data=melt(data, id=c('Prior', 'Word', 'amount'))
 ```
@@ -91,17 +94,21 @@ data=melt(data, id=c('Prior', 'Word', 'amount'))
 learnablity = subset(data, Prior=='Simplicity' & (variable %in% c('Accuracy'))) #,'Precision','Recall')))
 
 mins = ddply(learnablity, .(Word), find_min)
-mins$V1 = mins$V1 + 100
+mins$V1 = mins$V1
 learnablity = merge(learnablity, mins)
 
 learnablity = learnablity[learnablity$amount <= learnablity$V1,]
 
-ggplot(learnablity, aes(x=amount, value, linetype=variable, color=variable)) +
-  facet_wrap(~Word, scales='free_x', nrow=2) +
+library(ggrepel)
+vrd = unique(learnablity[learnablity$V1 < 1000 ,c('Word','Prior','V1', 'variable')])
+
+ggplot(learnablity, aes(x=amount, value, linetype=Word, color=Word)) +
+  #facet_wrap(~Word, scales='free_x', nrow=2) +
   labs(y='Posterior Accuracy', x='Number of Data Points') +
   geom_line(size=1) +
   theme_bw() +
-  guides(linetype=F, color=F) +
+  geom_label_repel(data=vrd, aes(x=V1, y=1.05, label=Word)) +
+  #guides(linetype=F, color=F) +
   scale_colour_brewer(palette="Set1") +
   ggtitle('English') +
   theme(legend.title=element_blank()) 
@@ -205,16 +212,20 @@ data=melt(data, id=c('Prior', 'Word', 'amount'))
 learnablity = subset(data, Prior=='Simplicity' & (variable %in% c('Accuracy','Precision','Recall')))
 
 mins = ddply(learnablity, .(Word), find_min)
-mins$V1 = mins$V1 + 15
+mins$V1 = mins$V1
 learnablity = merge(learnablity, mins)
 
 learnablity = learnablity[learnablity$amount <= learnablity$V1,]
 
-ggplot(learnablity, aes(x=amount, value, linetype=variable, color=variable)) +
-  facet_grid(.~Word, scales='free_x') +
+vrd = unique(learnablity[learnablity$V1 < 1000 & learnablity$variable=='Accuracy',c('Word','Prior','V1', 'variable')])
+
+ggplot(learnablity[learnablity$variable=='Accuracy',], aes(x=amount, value, linetype=variable, color=Word)) +
+  #facet_grid(.~Word, scales='free_x') +
   labs(y='Proportion', x='Number of Data Points') +
   geom_line(size=1) +
+  geom_label_repel(data=vrd, aes(x=V1, y=1.05, label=Word)) +
   theme_bw() +
+  xlim(0, 75) +
   scale_colour_brewer(palette="Set1") +
   theme(legend.title=element_blank()) 
 

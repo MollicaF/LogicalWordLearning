@@ -17,7 +17,7 @@ parser.add_option("--out", dest="out_path", type="string",
 
 parser.add_option("--steps", dest="steps", type="int", default=1000000, help="Number of samples to run")
 parser.add_option("--top", dest="top_count", type="int", default=1000, help="Top number of hypotheses to store")
-parser.add_option("--chains", dest="chains", type="int", default=1,
+parser.add_option("--chains", dest="chains", type="int", default=8,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Reliability value [0-1)")
@@ -68,8 +68,8 @@ def run(data_amount):
                     prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
-        #if samples_yielded % 100 == 0:
-         #   print h.prior, h.likelihood, h
+        if samples_yielded % 1000 == 0:
+            print h.prior, h.likelihood, h
         hyps.add(h)
 
     return hyps

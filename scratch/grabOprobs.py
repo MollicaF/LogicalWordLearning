@@ -10,8 +10,8 @@ from LOTlib.Inference.GrammarInference.Precompute import create_counts
 #############################################################################################
 parser = OptionParser()
 parser.add_option("--read", dest="filename", type="string", help="Pickled results",
-                  default="../LearnLexicon/PukaPuka/Mixing/Mixed2Puka.pkl")
-parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
+                  default="../LearnLexicon/English/Final/NEW_COMBO_ENG.pkl")
+parser.add_option("--family", dest="family", type="string", help="Family", default='english')
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
 parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise value")
@@ -78,19 +78,19 @@ context = four_gen_tree_context
 
 R = np.zeros((len(hyps[0].all_words()), len(hyps), len(context.objects)))
 
-with open('VizPF/key.txt', 'w') as f:
+with open('PaperFigs/key.txt', 'w') as f:
     f.write(','.join(context.objects))
 
 for hi, h in enumerate(hyps):
     for wi, w in enumerate(h.all_words()):
-        if do_I_abstract(h.value[w]):
+        #if do_I_abstract(h.value[w]):
             for oi, o in enumerate(context.objects):
-                if o in h.value[w]('foo', context, set(['ego'])):
+                if o in h.value[w]('foo', context, set(['Prue'])):
                     R[wi, hi, oi] = 1.0
 
 
 for wi, w in enumerate(target.all_words()):
-    np.savetxt('VizPF/Simplicity_' + w + '.csv', np.dot(np.exp(Posterior), R[wi]),delimiter=',')
+    np.savetxt('PaperFigs/Simplicity_' + w + '.csv', np.dot(np.exp(Posterior), R[wi]),delimiter=',')
 
 
 Likelihood = np.outer(Data, np.array([h.point_ll for h in hyps]))
@@ -103,4 +103,4 @@ Z = np.log(np.sum(np.exp(Posterior - np.outer(maxP,np.ones(Posterior.shape[1])))
 Posterior = Posterior - np.outer(Z, np.ones(Posterior.shape[1]))
 
 for wi, w in enumerate(target.all_words()):
-    np.savetxt('VizPF/Reuse_' + w + '.csv', np.dot(np.exp(Posterior), R[wi]),delimiter=',')
+    np.savetxt('PaperFigs/Reuse_' + w + '.csv', np.dot(np.exp(Posterior), R[wi]),delimiter=',')
