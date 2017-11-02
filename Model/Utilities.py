@@ -85,4 +85,4 @@ harmonic_number = lambda n, s: float(sum(Fraction(1, d) ** s for d in xrange(1, 
 
 def zipf(obj, s, C, N):
     margin = harmonic_number(N, s)
-    return 1 / (C.distance[obj] ** s * margin)
+    return 1.0 / ((C.distance[obj] ** s) * margin)

@@ -24,6 +24,48 @@ four_gen_tree_objs = ['Amanda', 'Anne', 'aragorn', 'Arwen', 'Brandy', 'Celebrind
 simple_tree_objs = ['Snow', 'charming', 'Emma', 'Mira', 'rump', 'Regina', 'henry', 'neal', 'baelfire', 'Maryann', 'ego']
 
 ####################################################################################
+#   Distances
+####################################################################################
+
+fg_distance = {'Amanda': 6,
+             'Anne': 33,
+             'aragorn': 9,
+             'Arwen': 14,
+             'Brandy': 13,
+             'Celebrindal': 37,
+             'Clarice': 18,
+             'elrond': 36,
+             'Eowyn': 21,
+             'fabio': 29,
+             'fred': 32,
+             'frodo': 4,
+             'Galadriel': 35,
+             'gandalf': 34,
+             'han': 22,
+             'harry': 15,
+             'Hermione': 8,
+             'gary': 17,
+             'james': 30,
+             'joey': 28,
+             'Katniss': 2,
+             'legolas': 26,
+             'Leia': 25,
+             'Lily': 31,
+             'luke': 23,
+             'Luna': 27,
+             'Mellissa': 19,
+             'merry': 10,
+             'Padme': 24,
+             'peeta': 1,
+             'Prue': 5,
+             'ron': 20,
+             'Rose': 11,
+             'Sabrina': 3,
+             'salem': 16,
+             'sam': 12,
+             'Zelda': 7}
+
+####################################################################################
 #   Contexts
 ####################################################################################
 
@@ -63,7 +105,7 @@ four_gen_tree_context = KinshipContext(four_gen_tree_objs,
                         ('spouse', 'Galadriel', 'gandalf'), ('spouse', 'aragorn', 'Arwen'),
                         ('spouse', 'Arwen', 'aragorn'), ('spouse', 'merry', 'Brandy'), ('spouse', 'Brandy', 'merry'),
                         ('spouse', 'Leia', 'han'), ('spouse', 'han', 'Leia'), ('spouse', 'elrond', 'Celebrindal'),
-                        ('spouse', 'Celebrindal', 'elrond')])
+                        ('spouse', 'Celebrindal', 'elrond')], distance=fg_distance)
 
 ####################################################################################
 #   Target Lexicons

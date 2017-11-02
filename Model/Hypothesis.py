@@ -1,10 +1,9 @@
-from LOTlib.Miscellaneous import Infinity, log
+from LOTlib.Miscellaneous import Infinity, log, q
 from LOTlib.Hypotheses.Lexicon.RecursiveLexicon import RecursiveLexicon
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.Eval import EvaluationException, RecursionDepthException
-from Utilities import reachable
-from LOTlib.Miscellaneous import q, Infinity
-from LOTlib.Inference.GrammarInference.Precompute import create_counts
+from Utilities import reachable, zipf
+from LOTlib.Inference.GrammarInference.Precompute import create_counts #
 from Grammar import makeGrammar
 import numpy as np
 
@@ -16,8 +15,10 @@ def make_hyps():
 
 class KinshipLexicon(RecursiveLexicon):
 
-    def __init__(self, alpha=0.9, recursive_depth_bound=10, **kwargs):
+    def __init__(self, alpha=0.9, epsilon=0.8, s=1.0, recursive_depth_bound=10, **kwargs):
         self.alpha = alpha
+        self.s = s
+        self.epsilon = epsilon
         self.recursive_depth_bound = recursive_depth_bound
         self.point_ll = 0
         RecursiveLexicon.__init__(self, alpha=self.alpha, **kwargs)
@@ -36,81 +37,63 @@ class KinshipLexicon(RecursiveLexicon):
             self.update_posterior()
         return self.prior
 
-    def compute_word_likelihood(self, data, word):
-        data = [dp for dp in data if dp.word == word]
-        assert len(data) > 0
-        constants = dict()
-        ll = 0
-        for datum in data:
-            if datum.context in constants.keys():
-                trueset = constants[datum.context][0]
-                all_poss = constants[datum.context][1]
-            else:
-                try:
-                    if datum.context.ego is None:
-                        trueset = self.make_word_data(word, datum.context)
-                    else:
-                        trueset = self.make_word_data(word, datum.context, fixX=datum.context.ego)
-
-                    all_poss = len(datum.context.objects) ** 2
-                    constants[datum.context] = [trueset, all_poss]
-                except RecursionDepthException:
-                    self.likelihood = -Infinity
-                    self.update_posterior()
-                    return self.likelihood
-
-            if (datum.word, datum.X, datum.Y) in trueset:
-                ll += log(self.alpha / len(trueset) + ((1. - self.alpha) / all_poss))
-            else:
-                ll += log((1. - self.alpha) / all_poss)
-
-        self.likelihood = ll / self.likelihood_temperature
-
-        self.update_posterior()
-        return self.likelihood
-
     def compute_likelihood(self, data, **kwargs):
         constants = dict()
         ll = 0
         for di, datum in enumerate(data):
+            # Cache constants
             if datum.context in constants.keys():
                 trueset = constants[datum.context][0]
-                all_poss = constants[datum.context][1]
+                egoset = constants[datum.context][1]
+                egoRef = constants[datum.context][2]
+                all_poss = constants[datum.context][3]
             else:
                 try:
-                    if datum.context.ego is None:
-                        trueset = self.make_true_data(datum.context)
-                        #trueset = {w: self.make_word_data(w, datum.context) for w in self.all_words()}
-                        all_poss = len(self.all_words()) * len(datum.context.objects) ** 2
-                    else:
-                        trueset = self.make_true_data(datum.context, fixX=datum.context.ego)
-                        #trueset = {w: self.make_word_data(w, datum.context, fixX=datum.context.ego)
-                        #           for w in self.all_words()}
-                        all_poss = len(self.all_words())*len(datum.context.objects)
+                    trueset = self.make_true_data(datum.context)
+                    egoset = self.make_true_data(datum.context, fixX=datum.context.ego)
+                    egoRef = dict()
+                    for w in self.all_words():
+                        rs = [t[2] for t in self.make_word_data(w, datum.context, fixX=datum.context.ego)]
+                        egoRef[w] = sum(map(lambda r: zipf(r, self.s, datum.context, len(datum.context.objects)), rs))
+                    all_poss = len(datum.context.objects)
 
-                    constants[datum.context] = [trueset, all_poss]
+                    constants[datum.context] = [trueset, egoset, egoRef, all_poss]
                 except RecursionDepthException:
                     self.likelihood = -Infinity
                     self.update_posterior()
                     return self.likelihood
-
-            # Check to see if you can recurse and if that matters
+                    # Make sure recursion is well formed
             if di == 0:
                 if not self.canIrecurse(data, trueset):
                     self.likelihood = -Infinity
                     self.update_posterior()
                     return self.likelihood
-
+            # Calculate the single point likelihood
+            p = (1. - self.alpha) / all_poss
             if (datum.word, datum.X, datum.Y) in trueset:
-                ll += log(self.alpha/len(trueset) + ((1.-self.alpha)/all_poss))
-            else:
-                ll += log((1.-self.alpha)/all_poss)
+                # Probability it's true and speaker centric
+                pT = self.alpha * (1. - self.epsilon)
+                # Probability of the speaker
+                # pS = zipf(datum.X, self.s, datum.context, len(datum.context.objects))
+                # Probability of the referent given the speaker and the word
+                pr = zipf(datum.Y, self.s, datum.context, len(datum.context.objects))
+                Z = sum(map(lambda r: zipf(r, self.s, datum.context, len(datum.context.objects)),
+                            self(datum.word, datum.context, set([datum.X]))))
+                p += pT * (pr / Z)
+            if (datum.word, datum.X, datum.Y) in egoset:
+                # Probability it's true and ego-centric
+                pT = self.alpha * self.epsilon
+                # Probability of the speaker
+                # pS = zipf(datum.X, self.s, datum.context, len(datum.context.objects))
+                # Probability of the referent
+                pR = zipf(datum.Y, self.s, datum.context, len(datum.context.objects)) / egoRef[datum.word]
+                p += pT * pR
+            ll += log(p)
 
         self.likelihood = ll / self.likelihood_temperature
 
         self.update_posterior()
         return self.likelihood
-
 
     def compute_posterior(self, data, **kwargs):
         self.compute_likelihood(data)
@@ -179,15 +162,16 @@ class KinshipLexicon(RecursiveLexicon):
 if __name__ == "__main__":
 
     from Model.Givens import english_words, four_gen_tree_context, english
-    from Model.Data import makeLexiconData
+    from Model.Data import makeTreeLexiconData, makeZipfianLexiconData, engFreq
     from Grammar import makeGrammar
-    rgrammar = makeGrammar(['Mira','Snow','charming','rump','neal','baelfire','Emma','Regina','henry','Maryann','ego'],
-                             compositional=True, terms=['X','objects','all'], nterms=['Tree', 'Set', 'Gender'],
-                             recursive=True, words=english_words)
-    data = makeLexiconData(english, four_gen_tree_context)
-    h0 = KinshipLexicon(alpha=0.9)
+    #rgrammar = makeGrammar(['Mira','Snow','charming','rump','neal','baelfire','Emma','Regina','henry','Maryann','ego'],
+    #                         compositional=True, terms=['X','objects','all'], nterms=['Tree', 'Set', 'Gender'],
+    #                         recursive=True, words=english_words)
+    gramm = makeGrammar(four_gen_tree_context.objects,nterms=['Tree','Set','Gender','Generation'])
+    h0 = KinshipLexicon(alpha=0.9, epsilon=0.99, s=0.0)
     for w in english_words:
-        h0.set_word(w, LOTHypothesis(rgrammar, display='lambda recurse_, C, X: %s'))
+        h0.set_word(w, LOTHypothesis(gramm, display='lambda recurse_, C, X: %s'))
 
-    tru = h0.make_true_data(four_gen_tree_context)
-    print h0.canIrecurse(data, tru)
+    for _ in xrange(10):
+        dat = makeZipfianLexiconData(english, four_gen_tree_context, engFreq, n=10)
+        print h0.compute_posterior(dat)

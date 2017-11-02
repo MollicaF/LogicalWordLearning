@@ -15,7 +15,7 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--priors", dest='Prior', type="string", help='Any special priors?', default=None)
 parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
-parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='turkish')
+parser.add_option("--family", dest='family', type='string', help='What family tree to learn', default='english')
 parser.add_option("--out", dest="out_path", type="string",
                   help="Output file (a pickle of FiniteBestSet)", default="turkish.pkl")
 
@@ -25,7 +25,8 @@ parser.add_option("--chains", dest="chains", type="int", default=7,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
-
+parser.add_option("--epsilon", dest="epsilon", type="int", default=0.50, help="Ego-centricity")
+parser.add_option("--s", dest="s", type="int", default=0., help="zipf parameter")
 
 parser.add_option("--data", dest="data", type="int", default=-1,       help="Amount of data")
 parser.add_option("--dmin", dest="data_min", type="int", default=10,   help="Min data to run")
@@ -148,22 +149,6 @@ elif options.family == 'english':
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=english_words,
                                        nterms=grammar_set, recursive=options.recurse)
 
-
-elif options.family == 'informant2':
-    from Model.Givens import english, english_words
-    from Shift.FeatureGiven import Info2_tree_context, Info2_obj
-
-    target = english
-    target_words = english_words
-    four_gen_tree_context = Info2_tree_context
-    four_gen_tree_context.ego = None # So we do not run an egocentric version here
-    if options.Prior is None:
-        my_grammar = makeGrammar(Info2_obj, words=english_words,
-                                 nterms=grammar_set, recursive=options.recurse)
-    else:
-        my_grammar = makeBiasedGrammar(Info2_obj, words=english_words,
-                                       nterms=grammar_set, recursive=options.recurse)
-
 else:
     from Model.Givens import target, four_gen_tree_context, genderless_english_words, four_gen_tree_objs
 
@@ -180,7 +165,8 @@ else:
 ######################################################################################################
 def run(data_amount):
     print "Starting chain on %s data points"%data_amount
-    data = makeLexiconData(target, four_gen_tree_context, n=data_amount, alpha=options.alpha, verbose=True)
+    #data = makeZipfianLexiconData(target, four_gen_tree_context, dfreq=engFreq, n=data_amount, s=options.s, alpha=options.alpha, epsilon=options.epsilon, verbose=True)
+    data = makeTreeLexiconData(target, four_gen_tree_context, n=data_amount, alpha=options.alpha, epsilon=options.epsilon, verbose=True)
 
     h0 = KinshipLexicon(alpha=options.alpha)
     for w in target_words:
@@ -191,6 +177,8 @@ def run(data_amount):
     mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
+        if samples_yielded % 100 == 0:
+            print h.prior, h.likelihood, h
         hyps.add(h)
 
     import pickle

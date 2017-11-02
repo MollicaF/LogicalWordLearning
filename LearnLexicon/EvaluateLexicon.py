@@ -2,14 +2,12 @@ import pickle
 import numpy as np
 from Model import *
 from Model.Givens import *
-#from Model.Givens import turkish, english, pukapuka, four_gen_tree_context, four_gen_tree_objs
 from fractions import Fraction
 from LOTlib.Miscellaneous import log
 from LOTlib.Eval import RecursionDepthException
 from LOTlib.Hypotheses.Priors.LZPrior import *
 from optparse import OptionParser
 from LOTlib.Inference.GrammarInference.Precompute import create_counts
-#from progressbar import ProgressBar
 
 #############################################################################################
 #    Option Parser
@@ -24,6 +22,8 @@ parser.add_option("--family", dest="family", type="string", help="Family", defau
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
 parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise value")
+parser.add_option("--epsilon", dest="epsilon", type="int", default=0.50, help="Ego-centricity")
+parser.add_option("--s", dest="s", type="int", default=0., help="zipf parameter")
 parser.add_option("--datafile", dest="datafile", type='str', default=None, help="Where is the data?")
 
 (options, args) = parser.parse_args()
@@ -33,14 +33,6 @@ parser.add_option("--datafile", dest="datafile", type='str', default=None, help=
 #############################################################################################
 
 target = eval(options.family)
-
-# For the Zipfian learner we assume egocentrism around peeta
-
-four_gen_tree_context.distance = {'Amanda': 6, 'Anne': 33, 'aragorn': 9, 'Arwen': 14, 'Brandy': 13, 'Celebrindal': 37,
-             'Clarice': 18, 'elrond': 36, 'Eowyn': 21, 'fabio': 29, 'fred': 32, 'frodo': 4, 'Galadriel': 35,
-             'gandalf': 34, 'han': 22, 'harry': 15, 'Hermione': 8, 'gary': 17, 'james': 30, 'joey': 28,
-             'Katniss': 2, 'legolas': 26, 'Leia': 25, 'Lily': 31, 'luke': 23, 'Luna': 27, 'Mellissa': 19, 'merry': 10,
-             'Padme': 24,'peeta': 1, 'Prue': 5, 'ron': 20, 'Rose': 11, 'Sabrina': 3, 'salem': 16, 'sam': 12, 'Zelda': 7}
 
 from scipy.special import beta
 def multdir(counts, alpha):
@@ -169,7 +161,14 @@ results = []
 result_strings = []
 
 if options.datafile is None:
-    huge_data = makeLexiconData(target, four_gen_tree_context, n=options.N, alpha=options.alpha, verbose=False)
+    huge_data = makeZipfianLexiconData(target, four_gen_tree_context, dfreq=engFreq, n=5000, alpha=0.95, s=1.0, epsilon=0.10) #options.alpha
+    '''
+    huge_data = []
+    for t in target.make_true_data(four_gen_tree_context, fixX='ego'):
+        huge_data.append(KinshipData(t[0],t[1],t[2],four_gen_tree_context))
+    for t in target.make_true_data(four_gen_tree_context):
+        huge_data.append(KinshipData(t[0], t[1], t[2], four_gen_tree_context))
+    '''
 else:
     with open(options.datafile, 'r') as f:
         huge_data = pickle.load(f)
@@ -182,6 +181,7 @@ else:
 #             w in target.all_words()}
 
 for s, h in enumerate(hyps):
+    h.s = 1.0
     h.compute_likelihood(huge_data)
     h.point_ll = h.likelihood / len(huge_data)
     for wrd in assess_inv_hyp(h, target, four_gen_tree_context):

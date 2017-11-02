@@ -116,7 +116,7 @@ def dads_(X, C):
     return male_(parents_of_(X, C))
 
 @primitive
-def children_(X, C):
+def childz(X, C):
     return children_of_(X, C)
 
 @primitive
@@ -170,3 +170,11 @@ def generation2_(X, C):
     if len(X) != 1:
         return set()
     return parents_of_(generation1_(X, C), C)
+
+@primitive
+def feature_(key, num, context):
+    do = set()
+    for person in context.features:
+        if num == int(person[key]):
+            do.add(person[0])
+    return do
