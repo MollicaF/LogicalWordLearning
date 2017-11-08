@@ -1,5 +1,5 @@
 from Data import KinshipContext
-from ZipfHypothesis import KinshipLexicon
+from Model.Hypothesis import KinshipLexicon
 from Model.Primitives import *
 from LOTlib.Evaluation.Eval import primitive
 

@@ -40,8 +40,8 @@ if options.data == -1:
 else:
     options.data_pts = [options.data]
 
-from Data import makeVariableLexiconData
-from FeatureGiven import *
+from Model.Data import makeZipfianLexiconData
+from Model.FeatureGiven import *
 from Model.Givens import uncle, brother, mother, grandma
 
 if options.hypType == 'def':

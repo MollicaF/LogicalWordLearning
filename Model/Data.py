@@ -121,9 +121,9 @@ def makeZipfianLexiconData(lexicon, context, dfreq=None, n=100, s=1.0, alpha=0.9
                 print "True data:", i, wrd, speaker, referent, eps
             data.append(KinshipData(wrd, speaker, referent, context))
         else:
-            wrd = sample1(lexicon.all_words())
-            x = sample1(context.objects)
-            y = sample1(context.objects)
+            wrd = weighted_sample(lexicon.all_words(), probs=freq)
+            x = weighted_sample(context.objects, probs=lambda x: zipf(x, s, context, len(context.objects)))
+            y = weighted_sample(context.objects, probs=lambda x: zipf(x, s, context, len(context.objects)))
             if verbose:
                 print "Noise data:", i, wrd, x, y
             data.append(KinshipData(wrd, x, y, context))
@@ -160,8 +160,45 @@ def makeUniformLexiconData(lexicon, context, n=1000, alpha=0.9, verbose=False):
             if verbose: print 'Noise Data:', s, output[-1].word, output[-1].X, output[-1].Y
     return output
 
-def makeWordData():
-    pass
+
+def makeWordData(word, lexicon, context, n=1000, alpha=0.9, epsilon=0.5, verbose=False):
+    '''
+
+    L() --> {(W,S,R)}
+    data ~ uniform( L() )
+
+    :param lexicon: the target lexicon
+    :param context: the context
+    :param n: the number of data points
+    :param alpha: the reliability parameter. Noise = 1 - alpha
+    :param epsilon: the ego-centric probability.
+    :param verbose: print the generated data points
+    :return: list of KinshipData objects
+    '''
+    data = []
+    tree_truth = lexicon.make_word_data(word, context)
+    ego_truth  = lexicon.make_word_data(word, context, fixX=context.ego)
+    for s in xrange(n):
+        if flip(alpha):
+            if flip(epsilon):
+                t = sample1(ego_truth)
+                if verbose:
+                    print "True data:", s, t[0], t[1], t[2]
+                data.append(KinshipData(t[0], t[1], t[2], context))
+            else:
+                t = sample1(tree_truth)
+                if verbose:
+                    print "True data:", s, t[0], t[1], t[2]
+                data.append(KinshipData(t[0], t[1], t[2], context))
+        else:
+            x = sample1(context.objects)
+            y = sample1(context.objects)
+            if verbose:
+                print "Noise data:", s, word, x, y
+            data.append(KinshipData(word, x, y, context))
+    if verbose:
+        print lexicon.compute_likelihood(data)
+    return data
 
 
 if __name__ == "__main__":
