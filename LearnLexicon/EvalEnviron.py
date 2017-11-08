@@ -99,18 +99,18 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
         for dp in hypothesized_word_data:
             if dp in true_word_data:
                 correct_count += 1
-        findings.append([w,                                                                     # Word
-                         hypothesis.value[w].compute_prior(),                                   # Hypothesis Prior
-                         hypothesis.compute_likelihood(data)/float(len(data)),                  # Hypothesis Likelihood
-                         hypothesis.compute_prior(),                                            # Lexicon Prior
-                         compute_reuse_prior(hypothesis),                                       # Recursive Prior
-                         hypothesis.point_ll,                                                   # Lexicon Likelihood
-                         correct_count,                                                         # No. Correct Objects
-                         len(hypothesized_word_data),                                           # No. Proposed Objects
-                         len(true_word_data),                                                   # No. True Objects
-                         do_I_abstract(hypothesis.value[w]),                                    # Abstraction?
-                         do_I_recurse(hypothesis.value[w]),                                     # Recursion?
-                         str(h.value[w])])                                                           # Hypothesis
+        findings.append([w,  # Word
+                         hypothesis.value[w].compute_prior(),  # Hypothesis Prior
+                         hypothesis.compute_likelihood(data, eval=True)/float(len(data)),  # Hypothesis Likelihood
+                         hypothesis.compute_prior(),  # Lexicon Prior
+                         compute_reuse_prior(hypothesis),  # Recursive Prior
+                         hypothesis.point_ll,  # Lexicon Likelihood
+                         correct_count,  # No. Correct Objects
+                         len(hypothesized_word_data),  # No. Proposed Objects
+                         len(true_word_data),  # No. True Objects
+                         do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_recurse(hypothesis.value[w]),  # Recursion?
+                         str(h.value[w])])  # Hypothesis
         print findings[-1]
     return findings
 
@@ -131,7 +131,7 @@ for s, h0 in enumerate(hyps):
     for w in h0.all_words():
         h0.value[w].grammar = grammar
         h.set_word(w, h0.value[w])
-    h.compute_likelihood(huge_data)
+    h.compute_likelihood(huge_data, eval=True)
     h.point_ll = h.likelihood / len(huge_data)
     for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
         result = [s] + wrd

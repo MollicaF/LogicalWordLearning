@@ -37,7 +37,7 @@ class KinshipLexicon(RecursiveLexicon):
             self.update_posterior()
         return self.prior
 
-    def compute_likelihood(self, data, **kwargs):
+    def compute_likelihood(self, data, eval=False, **kwargs):
         constants = dict()
         ll = 0
         for di, datum in enumerate(data):
@@ -64,7 +64,7 @@ class KinshipLexicon(RecursiveLexicon):
                     return self.likelihood
                     # Make sure recursion is well formed
             if di == 0:
-                if not self.canIrecurse(data, trueset):
+                if not eval and not self.canIrecurse(data, trueset):
                     self.likelihood = -Infinity
                     self.update_posterior()
                     return self.likelihood
