@@ -21,9 +21,9 @@ parser.add_option("--recurse", dest='recurse', action='store_true', help='Should
 parser.add_option("--family", dest="family", type="string", help="Family", default='pukapuka')
 parser.add_option("--data", dest="N", type="int", default=1000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
-parser.add_option("--alpha", dest="alpha", type="int", default=0.90, help="Noise value")
-parser.add_option("--epsilon", dest="epsilon", type="int", default=0.50, help="Ego-centricity")
-parser.add_option("--s", dest="s", type="int", default=0., help="zipf parameter")
+parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
+parser.add_option("--epsilon", dest="epsilon", type="float", default=0.50, help="Ego-centricity")
+parser.add_option("--s", dest="s", type="float", default=0.0, help="zipf parameter")
 parser.add_option("--datafile", dest="datafile", type='str', default=None, help="Where is the data?")
 
 (options, args) = parser.parse_args()
@@ -134,7 +134,7 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
                 correct_count += 1
         findings.append([w,                                                                     # Word
                          hypothesis.value[w].compute_prior(),                                   # Hypothesis Prior grammar.log_probability(hypothesis.value[w].value)
-                         hypothesis.compute_word_likelihood(data, w)/float(len(data)),          # Hypothesis Likelihood
+                         hypothesis.compute_likelihood(data)/float(len(data)),          # Hypothesis Likelihood
                          hypothesis.prior,                                                      # Lexicon Prior
                          compute_reuse_prior(hypothesis),                                     # Recursive Prior
                          hypothesis.point_ll,                                                   # Lexicon Likelihood
@@ -161,7 +161,7 @@ results = []
 result_strings = []
 
 if options.datafile is None:
-    huge_data = makeZipfianLexiconData(target, four_gen_tree_context, dfreq=engFreq, n=5000, alpha=0.95, s=1.0, epsilon=0.10) #options.alpha
+    huge_data = makeZipfianLexiconData(target, four_gen_tree_context, n=5000, alpha=options.alpha, s=options.s, epsilon=options.epsilon) #options.alpha
     '''
     huge_data = []
     for t in target.make_true_data(four_gen_tree_context, fixX='ego'):
@@ -180,8 +180,14 @@ else:
 #zipf3data = {w: makeZipfianLexiconData(target, w, four_gen_tree_context, n=options.N, s=3, alpha=options.alpha) for
 #             w in target.all_words()}
 
-for s, h in enumerate(hyps):
-    h.s = 1.0
+for s, h0 in enumerate(hyps):
+    h = KinshipLexicon()
+    for w in h0.all_words():
+        hw = h0.value[w]
+        hw.grammar = grammar
+        h.set_word(w, hw)
+    h.s = options.s
+    h.epsilon = options.epsilon
     h.compute_likelihood(huge_data)
     h.point_ll = h.likelihood / len(huge_data)
     for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
