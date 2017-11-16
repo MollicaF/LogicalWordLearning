@@ -15,7 +15,7 @@ def make_hyps():
 
 class KinshipLexicon(RecursiveLexicon):
 
-    def __init__(self, alpha=0.9, epsilon=0.8, s=1.0, recursive_depth_bound=10, **kwargs):
+    def __init__(self, alpha=0.9, epsilon=0.0, s=0.0, recursive_depth_bound=10, **kwargs):
         self.alpha = alpha
         self.s = s
         self.epsilon = epsilon
@@ -88,6 +88,45 @@ class KinshipLexicon(RecursiveLexicon):
                 # Probability of the referent
                 pR = zipf(datum.Y, self.s, datum.context, len(datum.context.objects)) / egoRef[datum.word]
                 p += pT * pR
+            if datum.X == datum.Y:
+                p = 1.0
+            ll += log(p)
+
+        self.likelihood = ll / self.likelihood_temperature
+
+        self.update_posterior()
+        return self.likelihood
+
+    def compute_L_likelihood(self, data, eval=False, **kwargs):
+        constants = dict()
+        ll = 0
+        for di, datum in enumerate(data):
+            # Cache constants
+            if datum.context in constants.keys():
+                trueset = constants[datum.context][0]
+                all_poss = constants[datum.context][3]
+            else:
+                try:
+                    trueset = self.make_true_data(datum.context)
+                    all_poss = len(datum.context.objects)
+
+                    constants[datum.context] = [trueset, all_poss]
+                except RecursionDepthException:
+                    self.likelihood = -Infinity
+                    self.update_posterior()
+                    return self.likelihood
+                    # Make sure recursion is well formed
+            if di == 0:
+                if not eval and not self.canIrecurse(data, trueset):
+                    self.likelihood = -Infinity
+                    self.update_posterior()
+                    return self.likelihood
+            # Calculate the single point likelihood
+            p = (1. - self.alpha) / all_poss
+            if datum.y == datum.x:
+                p = 1.0
+            if (datum.word, datum.X, datum.Y) in trueset:
+                p += self.alpha * len(trueset)**-1
             ll += log(p)
 
         self.likelihood = ll / self.likelihood_temperature
