@@ -77,8 +77,9 @@ class KinshipLexicon(RecursiveLexicon):
                 # pS = zipf(datum.X, self.s, datum.context, len(datum.context.objects))
                 # Probability of the referent given the speaker and the word
                 pr = zipf(datum.Y, self.s, datum.context, len(datum.context.objects))
-                Z = sum(map(lambda r: zipf(r, self.s, datum.context, len(datum.context.objects)),
-                            self(datum.word, datum.context, set([datum.X]))))
+                hout = self(datum.word, datum.context, set([datum.X]))
+                hout.discard(datum.X)
+                Z = sum(map(lambda r: zipf(r, self.s, datum.context, len(datum.context.objects)), hout))
                 p += pT * (pr / Z)
             if (datum.word, datum.X, datum.Y) in egoset:
                 # Probability it's true and ego-centric
@@ -88,8 +89,6 @@ class KinshipLexicon(RecursiveLexicon):
                 # Probability of the referent
                 pR = zipf(datum.Y, self.s, datum.context, len(datum.context.objects)) / egoRef[datum.word]
                 p += pT * pR
-            if datum.X == datum.Y:
-                p = 1.0
             ll += log(p)
 
         self.likelihood = ll / self.likelihood_temperature
@@ -123,8 +122,6 @@ class KinshipLexicon(RecursiveLexicon):
                     return self.likelihood
             # Calculate the single point likelihood
             p = (1. - self.alpha) / all_poss
-            if datum.y == datum.x:
-                p = 1.0
             if (datum.word, datum.X, datum.Y) in trueset:
                 p += self.alpha * len(trueset)**-1
             ll += log(p)
@@ -150,10 +147,12 @@ class KinshipLexicon(RecursiveLexicon):
             if fixX is None:
                 for x in context.objects:
                     for y in self(w, context, set([x])):  # x must be a set here
-                        trueset.add( (w, x, y) )
+                        if x != y:
+                            trueset.add( (w, x, y) )
             else:
                 for y in self(w, context, set([fixX])):  # x must be a set here
-                    trueset.add( (w, fixX, y) )
+                    if x != y:
+                        trueset.add( (w, fixX, y) )
         return trueset
 
 
@@ -165,10 +164,12 @@ class KinshipLexicon(RecursiveLexicon):
         if fixX is None:
             for x in context.objects:
                 for y in self(word, context, set([x])):  # x must be a set here
-                    trueset.add((word, x, y))
+                    if x != y:
+                        trueset.add((word, x, y))
         else:
             for y in self(word, context, set([fixX])):  # x must be a set here
-                trueset.add((word, fixX, y))
+                if x != y:
+                    trueset.add((word, fixX, y))
         return trueset
 
     def canIrecurse(self, data, trueset):

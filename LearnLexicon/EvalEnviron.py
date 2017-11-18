@@ -110,7 +110,7 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
                          len(true_word_data),  # No. True Objects
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
-                         str(h.value[w])])  # Hypothesis
+                         '"' + str(h.value[w]) + '"'])  # Hypothesis
         print findings[-1]
     return findings
 
