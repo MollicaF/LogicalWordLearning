@@ -151,7 +151,7 @@ class KinshipLexicon(RecursiveLexicon):
                             trueset.add( (w, x, y) )
             else:
                 for y in self(w, context, set([fixX])):  # x must be a set here
-                    if x != y:
+                    if fixX != y:
                         trueset.add( (w, fixX, y) )
         return trueset
 
@@ -168,7 +168,7 @@ class KinshipLexicon(RecursiveLexicon):
                         trueset.add((word, x, y))
         else:
             for y in self(word, context, set([fixX])):  # x must be a set here
-                if x != y:
+                if fixX != y:
                     trueset.add((word, fixX, y))
         return trueset
 
@@ -181,8 +181,11 @@ class KinshipLexicon(RecursiveLexicon):
         except:
             return True # Because if it doesn't have a grammar it's a force function
         counts, inx, _ = create_counts(grammar, hyps)
-        counts = np.sum(counts['SET'], axis=0)
         relinx = [(k[2], inx[k]) for k in inx.keys() if k[1] == 'recurse_']
+        if len(relinx) == 0:
+            return True
+        counts = np.sum(counts['SET'], axis=0)
+
 
         F1s = []
         for wi, w in enumerate(self.all_words()):

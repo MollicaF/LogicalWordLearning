@@ -208,9 +208,6 @@ def makeCharGrammar(context):
 
     return char_grammar
 
-def makeDefGrammar():
-    return makeGrammar(objects=None, nterms=['Tree', 'Set', 'Gender'], terms=['X'], abstractP=100.0)
-
 
 if __name__ == "__main__":
 

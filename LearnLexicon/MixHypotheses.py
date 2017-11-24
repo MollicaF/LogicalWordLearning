@@ -3,19 +3,23 @@ import numpy as np
 from copy import copy
 from Model import *
 from Model.Givens import *
+from Model.FeatureGiven import *
 from LOTlib.MPI.MPI_map import MPI_map, is_master_process
 from LOTlib import break_ctrlc
 from LOTlib.TopN import TopN
 from LOTlib.Miscellaneous import display_option_summary
 from LOTlib.Miscellaneous import weighted_sample
 from optparse import OptionParser
+from LOTlib.Inference.Samplers.Sampler import Sampler
+from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 
 ######################################################################################################
 #   Option Parser
 ######################################################################################################
 parser = OptionParser()
-parser.add_option("--family", dest='family', type='string', help="What is the target",
-                  default='english')
+parser.add_option("--family", dest='family', type='string', help="What is the target", default='english')
+parser.add_option("--context", dest='context', type='string', help="What is the context",
+                  default='four_gen_tree_context')
 parser.add_option("--space", dest="space", type='string', help="Pickled hypotheses",
                   default='truncated.pkl')
 parser.add_option("--out", dest="out_loc", type='string', help="Output file location",
@@ -42,7 +46,8 @@ else:
 ######################################################################################################
 #   Sampler Class
 ######################################################################################################
-from LOTlib.Inference.Samplers.Sampler import Sampler
+
+
 class Gibbs(Sampler):
     def __init__(self, current_sample, data, steps=np.Infinity, proposer=None, skip=0,
                  prior_temperature=1.0, likelihood_temperature=1.0, acceptance_temperature=1.0, trace=False,
@@ -91,6 +96,7 @@ class Gibbs(Sampler):
 #   Load Lexicons
 ######################################################################################################
 target = eval(options.family)
+the_context = eval(options.context)
 
 # Load in the lexicons
 hypothesis_space = []
@@ -99,17 +105,17 @@ with open(options.space, 'r') as f:
 
 print '## Loaded', len(hypothesis_space), 'hypotheses.'
 
-from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
-grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
-my_grammar = makeGrammar(four_gen_tree_objs, words=english_words,
-                         nterms=grammar_set)
+my_grammar = list(hypothesis_space)[0].value[target.all_words()[0]].grammar
+#grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
+#my_grammar = makeGrammar(four_gen_tree_objs, words=english_words,
+#                         nterms=grammar_set)
 
 def normalize(damount):
-    huge_data = makeUniformData(target, four_gen_tree_context, n=damount, alpha=options.alpha)
+    huge_data = makeUniformLexiconData(target, the_context, n=damount, alpha=options.alpha)
     lexicon = { w : set() for w in target.all_words() }
     for h in hypothesis_space:
         for w in h.all_words():
-            h.value[w].stored_likelihood = h.compute_word_likelihood(huge_data, w)
+            h.value[w].stored_likelihood = h.compute_likelihood([dp for dp in huge_data if dp.word == w])
             lexicon[w].add(h.value[w])
 
     for w in lexicon.keys():
@@ -142,7 +148,9 @@ def run(damount):
     hyps = TopN(N=options.top_count)
     for s, h in enumerate(gs):
         hyps.add(h)
-
+        print h.prior, \
+            h.likelihood, \
+            h
     return hyps
 
 ######################################################################################################
