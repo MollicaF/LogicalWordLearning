@@ -26,6 +26,9 @@ parser.add_option("--out", dest="out_loc", type='string', help="Output file loca
                   default='GibbsEnglish.pkl')
 
 parser.add_option("--alpha", dest="alpha", type='float', help='Reliability of a data point', default=0.9)
+parser.add_option("--epsilon", dest="epsilon", type="float", default=0.0, help="Ego-centricity")
+parser.add_option("--s", dest="s", type="float", default=0., help="zipf parameter")
+
 parser.add_option("--samples", dest="samples", type="int", help="Number of samples desired", default=100000)
 parser.add_option("--top", dest="top_count", type="int", default=100, help="Top number of hypotheses to store")
 parser.add_option("--chains", dest="chains", type="int", default=1,
@@ -113,7 +116,8 @@ my_grammar = list(hypothesis_space)[0].value[target.all_words()[0]].grammar
 def normalize(damount):
     huge_data = makeUniformLexiconData(target, the_context, n=damount, alpha=options.alpha)
     lexicon = { w : set() for w in target.all_words() }
-    for h in hypothesis_space:
+    for ho in hypothesis_space:
+        h = updateLexicon(ho, my_grammar, alpha=options.alpha, epsilon=options.epsilon, s=options.s)
         for w in h.all_words():
             h.value[w].stored_likelihood = h.compute_likelihood([dp for dp in huge_data if dp.word == w])
             lexicon[w].add(h.value[w])
@@ -140,7 +144,7 @@ def run(damount):
     propose.inx = 0
     proposer = lambda x : propose(x)
 
-    h0 = KinshipLexicon(alpha=options.alpha)
+    h0 = KinshipLexicon(alpha=options.alpha, epsilon=options.epsilon, s=options.s)
     for w in target.all_words():
         h0.set_word(w, LOTHypothesis(my_grammar, display='lambda recurse_, C, X: %s'))
 

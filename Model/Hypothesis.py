@@ -202,6 +202,16 @@ class KinshipLexicon(RecursiveLexicon):
 
         return True
 
+
+def updateLexicon(lexicon, grammar=default_grammar, **kwargs):
+    h = KinshipLexicon(**kwargs)
+    for w in lexicon.all_words():
+        hw = h0.value[w]
+        hw.grammar = grammar
+        h.set_word(w, hw)
+    return h
+
+
 if __name__ == "__main__":
 
     from Model.Givens import english_words, four_gen_tree_context, english
