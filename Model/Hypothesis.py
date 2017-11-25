@@ -206,7 +206,7 @@ class KinshipLexicon(RecursiveLexicon):
 def updateLexicon(lexicon, grammar=default_grammar, **kwargs):
     h = KinshipLexicon(**kwargs)
     for w in lexicon.all_words():
-        hw = h0.value[w]
+        hw = lexicon.value[w]
         hw.grammar = grammar
         h.set_word(w, hw)
     return h
