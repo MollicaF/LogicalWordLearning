@@ -86,7 +86,7 @@ else:
 if options.grammar == "def":
     my_grammar = makeGrammar(the_objects, words=target_words,
                              nterms=grammar_set, recursive=options.recurse)
-if options.grammar == 'char':
+elif options.grammar == 'char':
     my_grammar = makeCharGrammar(the_context)
 else:
     assert False, "What grammar am I using?"
