@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 from Model import *
 from Model.Givens import *
+from Model.FeatureGiven import *
 from scipy.special import beta
 from optparse import OptionParser
 from LOTlib.Inference.GrammarInference.Precompute import create_counts
@@ -15,7 +16,10 @@ parser.add_option("--read", dest="filename", type="string", help="Pickled result
 parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="results.csv")
 parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
+parser.add_option("--grammar", dest='grammar', action='store_true', help='Use the default grammar?', default=False)
 parser.add_option("--family", dest="family", type="string", help="Family", default='english')
+parser.add_option("--context", dest='context', type='string', help="What is the context",
+                  default='four_gen_tree_context')
 parser.add_option("--data", dest="N", type="int", default=10000,
                   help="If > 0, recomputes the likelihood on a sample of data this size")
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
@@ -29,7 +33,8 @@ parser.add_option("--datafile", dest="datafile", type='str', default=None, help=
 #    Functions and Things
 #############################################################################################
 target = eval(options.family)
-ground_truth = target.make_true_data(four_gen_tree_context)
+the_context = eval(options.context)
+ground_truth = target.make_true_data(the_context)
 
 if options.recurse:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
@@ -39,14 +44,14 @@ else:
 
 if options.datafile is None:
     if options.family=='english':
-        huge_data = makeZipfianLexiconData(target, four_gen_tree_context,
+        huge_data = makeZipfianLexiconData(target, the_context,
                                            dfreq=engFreq,
                                            n=options.N,
                                            alpha=options.alpha,
                                            s=options.s,
                                            epsilon=options.epsilon)
     else:
-        huge_data = makeZipfianLexiconData(target, four_gen_tree_context,
+        huge_data = makeZipfianLexiconData(target, the_context,
                                            n=options.N,
                                            alpha=options.alpha,
                                            s=options.s,
@@ -114,6 +119,20 @@ def assess_inv_hyp(hypothesis, target_lexicon, context):
         print findings[-1]
     return findings
 
+def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
+    findings = []
+    for w in target_lexicon.all_words():
+        findings.append([w,  # Word
+                         hypothesis.value[w].compute_prior(),  # Hypothesis Prior
+                         hypothesis.compute_prior(),  # Lexicon Prior
+                         compute_reuse_prior(hypothesis),  # Recursive Prior
+                         do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_recurse(hypothesis.value[w]),  # Recursion?
+                         '"' + str(h.value[w]) + '"'] +
+                        [int(o in hypothesis(w, context, set([o]))) for o in context.objs])  # Hypothesis
+        print findings[-1]
+    return findings
+
 
 print "Loading the data"
 with open(options.filename, 'r') as f:
@@ -129,11 +148,12 @@ result_strings = []
 for s, h0 in enumerate(hyps):
     h = KinshipLexicon(alpha=options.alpha, epsilon=options.epsilon, s=options.s)
     for w in h0.all_words():
-        h0.value[w].grammar = grammar
+        if not options.grammar:
+            h0.value[w].grammar = grammar
         h.set_word(w, h0.value[w])
-    h.compute_likelihood(huge_data, eval=True)
-    h.point_ll = h.likelihood / len(huge_data)
-    for wrd in assess_inv_hyp(h, target, four_gen_tree_context):
+    # h.compute_likelihood(huge_data, eval=True)
+    # h.point_ll = h.likelihood / len(huge_data)
+    for wrd in cheap_assess_inv_hyp(h, target, the_context):
         result = [s] + wrd
         result_strings.append(', '.join(str(i) for i in result))
         results.append(result)
