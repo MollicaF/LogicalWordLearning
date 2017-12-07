@@ -105,7 +105,7 @@ four_gen_tree_context = KinshipContext(four_gen_tree_objs,
                         ('spouse', 'Galadriel', 'gandalf'), ('spouse', 'aragorn', 'Arwen'),
                         ('spouse', 'Arwen', 'aragorn'), ('spouse', 'merry', 'Brandy'), ('spouse', 'Brandy', 'merry'),
                         ('spouse', 'Leia', 'han'), ('spouse', 'han', 'Leia'), ('spouse', 'elrond', 'Celebrindal'),
-                        ('spouse', 'Celebrindal', 'elrond')], distance=fg_distance)
+                        ('spouse', 'Celebrindal', 'elrond')], distance=fg_distance, ego='Prue')
 
 ####################################################################################
 #   Target Lexicons

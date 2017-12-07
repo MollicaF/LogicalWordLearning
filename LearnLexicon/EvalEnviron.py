@@ -136,8 +136,9 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
                          compute_reuse_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
-                         '"' + str(h.value[w]) + '"'] +
-                        [int(o in hypothesis(w, context, set([o]))) for o in context.objs])  # Hypothesis
+                         '"' + str(h.value[w]) + '"', 'WORLD'] +
+                        [int(o in hypothesis(w, context, set([o]))) for o in context.objs] +
+                        ['EGO'] + [int(o in hypothesis(w, context, set([context.ego]))) for o in context.objs])  # Hypothesis
         print findings[-1]
     return findings
 
