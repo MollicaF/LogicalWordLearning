@@ -36,9 +36,18 @@ target = eval(options.family)
 the_context = eval(options.context)
 ground_truth = target.make_true_data(the_context)
 
+print "Loading the data"
+with open(options.filename, 'r') as f:
+    hyps = pickle.load(f)
+
+print "Loaded %s hypotheses" % (len(hyps))
+
+
 if options.recurse:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
                           recursive=True, words=target.all_words())
+elif options.grammar:
+    grammar = list(hyps)[0].value[target.all_words()[0]].grammar
 else:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
 
@@ -77,7 +86,6 @@ def compute_reuse_prior(lex):
         prior += multdir([c], np.ones(len(c))/float(len(c)))[0]
 
     return prior
-
 
 def do_I_abstract(h):
     return int( 'X' in [x.name for x in h.value.subnodes()])
@@ -134,11 +142,6 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
     return findings
 
 
-print "Loading the data"
-with open(options.filename, 'r') as f:
-    hyps = pickle.load(f)
-
-print "Loaded %s hypotheses" % (len(hyps))
 #############################################################################################
 #    Evaluation Loop
 #############################################################################################
@@ -148,8 +151,7 @@ result_strings = []
 for s, h0 in enumerate(hyps):
     h = KinshipLexicon(alpha=options.alpha, epsilon=options.epsilon, s=options.s)
     for w in h0.all_words():
-        if not options.grammar:
-            h0.value[w].grammar = grammar
+        h0.value[w].grammar = grammar
         h.set_word(w, h0.value[w])
     # h.compute_likelihood(huge_data, eval=True)
     # h.point_ll = h.likelihood / len(huge_data)
