@@ -17,6 +17,7 @@ parser.add_option("--write", dest="out_path", type="string", help="Results csv",
                   default="results.csv")
 parser.add_option("--recurse", dest='recurse', action='store_true', help='Should we allow recursion?', default=False)
 parser.add_option("--grammar", dest='grammar', action='store_true', help='Use the default grammar?', default=False)
+parser.add_option("--zipf", dest='zipf', action='store_true', help='Return distance instead of binary', default=False)
 parser.add_option("--family", dest="family", type="string", help="Family", default='english')
 parser.add_option("--context", dest='context', type='string', help="What is the context",
                   default='four_gen_tree_context')
@@ -143,6 +144,21 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
     return findings
 
 
+def Zcheap_assess_inv_hyp(hypothesis, target_lexicon, context):
+    findings = []
+    for w in target_lexicon.all_words():
+        findings.append([w,  # Word
+                         hypothesis.value[w].compute_prior(),  # Hypothesis Prior
+                         hypothesis.compute_prior(),  # Lexicon Prior
+                         compute_reuse_prior(hypothesis),  # Recursive Prior
+                         do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_recurse(hypothesis.value[w]),  # Recursion?
+                         '"' + str(h.value[w]) + '"', 'WORLD'] +
+                        [context.distance[o]*int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o] +
+                        ['EGO'] + [context.distance[o]*int(o in hypothesis(w, context, set([context.ego]))) for o in context.objects])  # Hypothesis
+        print findings[-1]
+    return findings
+
 #############################################################################################
 #    Evaluation Loop
 #############################################################################################
@@ -156,10 +172,17 @@ for s, h0 in enumerate(hyps):
         h.set_word(w, h0.value[w])
     # h.compute_likelihood(huge_data, eval=True)
     # h.point_ll = h.likelihood / len(huge_data)
-    for wrd in cheap_assess_inv_hyp(h, target, the_context):
-        result = [s] + wrd
-        result_strings.append(', '.join(str(i) for i in result))
-        results.append(result)
+    if options.zipf:
+        for wrd in Zcheap_assess_inv_hyp(h, target, the_context):
+            result = [s] + wrd
+            result_strings.append(', '.join(str(i) for i in result))
+            results.append(result)
+    else:
+        for wrd in cheap_assess_inv_hyp(h, target, the_context):
+            result = [s] + wrd
+            result_strings.append(', '.join(str(i) for i in result))
+            results.append(result)
+
 
 print "Writing csv file . . ."
 with open(options.out_path, 'w') as f:
