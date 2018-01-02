@@ -96,6 +96,11 @@ def do_I_recurse(h):
     return int( 'recurse_' in [x.name for x in h.value.subnodes()])
 
 
+def do_I_reuse(lex):
+    counts = create_counts(grammar, [lex.value[w] for w in lex.all_words()])[0]
+    return bool([ 1 for x in counts.values() if np.any(x > 1)])
+
+
 def assess_inv_hyp(hypothesis, target_lexicon, context):
     findings = []
     hypothesized_lexicon_data = hypothesis.make_true_data(context)
@@ -136,6 +141,7 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
                          hypothesis.compute_prior(),  # Lexicon Prior
                          compute_reuse_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_reuse(hypothesis),
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
                          '"' + str(h.value[w]) + '"', 'WORLD'] +
                         [int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o] +
@@ -152,6 +158,7 @@ def Zcheap_assess_inv_hyp(hypothesis, target_lexicon, context):
                          hypothesis.compute_prior(),  # Lexicon Prior
                          compute_reuse_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_reuse(hypothesis),
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
                          '"' + str(h.value[w]) + '"', 'WORLD'] +
                         [context.distance[o]*int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o] +
