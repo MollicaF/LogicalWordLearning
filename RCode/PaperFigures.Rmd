@@ -1,0 +1,1394 @@
+---
+title: "Kinship"
+author: "Frank"
+date: "December 13, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+source('utilities.R')
+tol14rainbow=c("#882E72", "#B178A6", "#D6C1DE", "#1965B0", "#5289C7", "#7BAFDE", "#4EB265", "#90C987", "#CAE0AB", "#F7EE55", "#F6C141", "#F1932D", "#E8601C", "#DC050C")
+pass = c(ls(), 'pass', 'cleanup')
+
+cleanup = function(){rm(list=ls(pos=.GlobalEnv)[!(ls(pos=.GlobalEnv) %in% pass)], pos=.GlobalEnv)}
+cleanup()
+```
+
+# Hypothesis by data points
+
+## English
+
+```{r english}
+
+marginalBoots = feather::read_feather('Feathers/englishBoots1000.feather')
+
+mins = marginalBoots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount))
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+ggplot(aes(x=amount, Accuracy, color=Word)) +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=Word),
+               alpha=0.15,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.6) +
+  geom_text_repel(data=mins, aes(x=mins, y=1.05, label=Word)) +
+  geom_point(data=mins, aes(x=mins, y=1), size=2) +
+  theme_bw() +
+  guides(color=F, fill=F) +
+  scale_colour_manual(values=tol14rainbow) +
+  scale_fill_manual(values=tol14rainbow) +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/Learn_English.svg', width=9, height=5.25)
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/F1_English.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Pukapuka
+
+```{r pukapuka}
+
+marginalBoots = feather::read_feather('Feathers/pukapukaBoots1000.feather')
+
+mins = marginalBoots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount))
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+ggplot(aes(x=amount, Accuracy, color=Word)) +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=Word),
+               alpha=0.15,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.6) +
+  geom_text_repel(data=mins, aes(x=mins, y=1.05, label=Word)) +
+  geom_point(data=mins, aes(x=mins, y=1), size=2) +
+  theme_bw() +
+  guides(color=F, fill=F) +
+  scale_colour_manual(values=tol14rainbow) +
+  scale_fill_manual(values=tol14rainbow) +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/Learn_Pukapuka.svg', width=9, height=5.25)
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/F1_Pukapuka.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Turkish
+
+```{r turkish}
+
+marginalBoots = feather::read_feather('Feathers/turkishBoots1000.feather')
+
+mins = marginalBoots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount))
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+ggplot(aes(x=amount, Accuracy, color=Word)) +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=Word),
+               alpha=0.15,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.6) +
+  geom_text_repel(data=mins, aes(x=mins, y=1.05, label=Word)) +
+  geom_point(data=mins, aes(x=mins, y=1), size=2) +
+  theme_bw() +
+  guides(color=F, fill=F) +
+  scale_colour_manual(values=tol14rainbow) +
+  scale_fill_manual(values=tol14rainbow) +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/Learn_Turkish.svg', width=9, height=5.25)
+
+marginalBoots %>%
+  left_join(mins) %>%
+  filter(amount <= mins + 5) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank()) 
+ggsave('../Figures/F1_Turkish.svg', width=6, height=4)
+
+cleanup()
+```
+
+# Characteristic to Defining Shift
+
+## Informant One
+
+```{r info1}
+
+Info1Boots = feather::read_feather('Feathers/info1Boots1000.feather')
+
+mins = Info1Boots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99|Accuracy == max(Accuracy)) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount)) %>%
+  mutate(mins=ifelse(mins==0, max(mins)+10, mins+5),
+         mins=ifelse(mins>200, 250, mins))
+
+Info1Boots %>%
+  left_join(mins) %>%
+  filter(amount <= mins) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_Info1.svg', width=6, height=4)
+
+Info1Boots %>% 
+  left_join(mins) %>%
+  gather(variable, value, Char:Recall) %>%
+  filter(variable=='Char', amount < mins, amount < 50) %>%
+  bind_rows(Info1Boots %>% 
+              left_join(mins) %>%
+              gather(variable, value, Char:Recall) %>%
+              filter(variable=='Char', amount < mins, amount < 50) %>% 
+              mutate(variable='Def', value=1-value)) %>%
+  filter(amount > 0) %>%
+  mutate(variable=ifelse(variable=='Char', 'Characteristic', 'Defining')) %>%
+  ggplot(aes(x=amount, value, color=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Posterior Probability', x='Number of Data Points') +
+  geom_hline(aes(yintercept=0.5), linetype=3) +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1") +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/Char2Def_Info1.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Informant Two
+
+```{r info2}
+
+Info1Boots = feather::read_feather('Feathers/info2Boots1000.feather')
+
+mins = Info1Boots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99|Accuracy == max(Accuracy)) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount)) %>%
+  mutate(mins=ifelse(mins==0, max(mins)+10, mins+5),
+         mins=ifelse(mins>200, 250, mins))
+
+Info1Boots %>%
+  left_join(mins) %>%
+  filter(amount <= mins) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_Info2.svg', width=6, height=4)
+
+Info1Boots %>% 
+  left_join(mins) %>%
+  gather(variable, value, Char:Recall) %>%
+  filter(variable=='Char', amount < mins, amount < 50) %>%
+  bind_rows(Info1Boots %>% 
+              left_join(mins) %>%
+              gather(variable, value, Char:Recall) %>%
+              filter(variable=='Char', amount < mins, amount < 50) %>% 
+              mutate(variable='Def', value=1-value)) %>%
+  filter(amount > 0) %>%
+  mutate(variable=ifelse(variable=='Char', 'Characteristic', 'Defining')) %>%
+  ggplot(aes(x=amount, value, color=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Posterior Probability', x='Number of Data Points') +
+  geom_hline(aes(yintercept=0.5), linetype=3) +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1") +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/Char2Def_Info2.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Informant Three
+
+```{r info3}
+
+Info1Boots = feather::read_feather('Feathers/info3Boots1000.feather')
+
+mins = Info1Boots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99|Accuracy == max(Accuracy)) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount)) %>%
+  mutate(mins=ifelse(mins==0, max(mins)+10, mins+5),
+         mins=ifelse(mins>200, 250, mins))
+
+Info1Boots %>%
+  left_join(mins) %>%
+  filter(amount <= mins) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_Info3.svg', width=6, height=4)
+
+Info1Boots %>% 
+  left_join(mins) %>%
+  gather(variable, value, Char:Recall) %>%
+  filter(variable=='Char', amount < mins, amount < 50) %>%
+  bind_rows(Info1Boots %>% 
+              left_join(mins) %>%
+              gather(variable, value, Char:Recall) %>%
+              filter(variable=='Char', amount < mins, amount < 50) %>% 
+              mutate(variable='Def', value=1-value)) %>%
+  filter(amount > 0) %>%
+  mutate(variable=ifelse(variable=='Char', 'Characteristic', 'Defining')) %>%
+  ggplot(aes(x=amount, value, color=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Posterior Probability', x='Number of Data Points') +
+  geom_hline(aes(yintercept=0.5), linetype=3) +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1") +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/Char2Def_Info3.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Informant Four
+
+```{r info4}
+
+Info1Boots = feather::read_feather('Feathers/info4Boots1000.feather')
+
+mins = Info1Boots %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy > 0.99|Accuracy == max(Accuracy)) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount)) %>%
+  mutate(mins=ifelse(mins==0, max(mins)+10, mins+5),
+         mins=ifelse(mins>200, 250, mins))
+
+Info1Boots %>%
+  left_join(mins) %>%
+  filter(amount <= mins) %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_Info4.svg', width=6, height=4)
+
+Info1Boots %>% 
+  left_join(mins) %>%
+  gather(variable, value, Char:Recall) %>%
+  filter(variable=='Char', amount < mins, amount < 50) %>%
+  bind_rows(Info1Boots %>% 
+              left_join(mins) %>%
+              gather(variable, value, Char:Recall) %>%
+              filter(variable=='Char', amount < mins, amount < 50) %>% 
+              mutate(variable='Def', value=1-value)) %>%
+  filter(amount > 0) %>%
+  mutate(variable=ifelse(variable=='Char', 'Characteristic', 'Defining')) %>%
+  ggplot(aes(x=amount, value, color=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Posterior Probability', x='Number of Data Points') +
+  geom_hline(aes(yintercept=0.5), linetype=3) +
+  stat_summary(fun.ymin=function(x){quantile(x, .025)},
+               fun.ymax=function(x){quantile(x, .975)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1") +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/Char2Def_Info4.svg', width=6, height=4)
+
+cleanup()
+```
+
+# Alpha Analysis
+
+```{r alpha}
+Alpha = rbind(
+  feather::read_feather('Feathers/alpha10_30Boots1000.feather') %>%
+    mutate(Alpha = 0.10, Environ = 0.30),
+
+  feather::read_feather('Feathers/alpha50_30Boots1000.feather') %>% 
+    mutate(Alpha = 0.50, Environ = 0.30),
+
+  feather::read_feather('Feathers/alpha90_30Boots1000.feather') %>%
+    mutate(Alpha = 0.90, Environ = 0.30),
+
+  feather::read_feather('Feathers/alpha10_40Boots1000.feather') %>%
+    mutate(Alpha = 0.10, Environ = 0.40),
+
+  feather::read_feather('Feathers/alpha50_40Boots1000.feather') %>%
+    mutate(Alpha = 0.50, Environ = 0.40),
+
+  feather::read_feather('Feathers/alpha90_40Boots1000.feather') %>%
+    mutate(Alpha = 0.90, Environ = 0.40),
+
+  feather::read_feather('Feathers/alpha10_50Boots1000.feather') %>%
+    mutate(Alpha = 0.10, Environ = 0.50),
+
+  feather::read_feather('Feathers/alpha50_50Boots1000.feather') %>%
+    mutate(Alpha = 0.50, Environ = 0.50),
+
+  feather::read_feather('Feathers/alpha90_50Boots1000.feather') %>%
+    mutate(Alpha = 0.90, Environ = 0.50),
+
+  feather::read_feather('Feathers/alpha10_60Boots1000.feather') %>%
+    mutate(Alpha = 0.10, Environ = 0.60),
+
+  feather::read_feather('Feathers/alpha50_60Boots1000.feather') %>%
+    mutate(Alpha = 0.50, Environ = 0.60),
+
+  feather::read_feather('Feathers/alpha90_60Boots1000.feather') %>%
+    mutate(Alpha = 0.90, Environ = 0.60)
+)
+
+mins = Alpha %>%
+  group_by(Word, amount, Alpha) %>%
+  summarise(Accuracy=mean(Accuracy)) %>%
+  ungroup() %>%
+  group_by(Word, Alpha) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount))
+
+Alpha %>%
+  left_join(mins) %>%
+  mutate(Alpha=as.factor(Alpha),
+         Environ=as.factor(Environ)) %>%
+  filter(amount <= mins) %>%
+  ggplot(aes(x=amount, y=Accuracy, color=Alpha, linetype=Alpha)) +
+  facet_grid(Environ~Word, scales = 'free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){mean(x)-3*sd(x)/length(x)**.5},
+               fun.ymax=function(x){mean(x)+3*sd(x)/length(x)**.5},
+               geom='ribbon',
+               aes(fill=Alpha),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(),legend.position = 'bottom',
+        legend.margin = margin(-.25,0,0,0,unit='cm')) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/AlphaAnalysis.svg', width=10, height=4)
+
+cleanup()
+```
+
+# Zipf Analysis
+
+```{r zipf}
+
+zipf0E0 = feather::read_feather('Feathers/englishZ0_E0Boots1000.feather')
+zipf1E0 = feather::read_feather('Feathers/englishZ1_E0Boots1000.feather')
+zipf2E0 = feather::read_feather('Feathers/englishZ2_E0Boots1000.feather')
+zipf0E1 = feather::read_feather('Feathers/englishZ0_E1Boots1000.feather')
+zipf1E1 = feather::read_feather('Feathers/englishZ1_E1Boots1000.feather')
+zipf2E1 = feather::read_feather('Feathers/englishZ2_E1Boots1000.feather')
+zipf0E2 = feather::read_feather('Feathers/englishZ0_E2Boots1000.feather')
+zipf1E2 = feather::read_feather('Feathers/englishZ1_E2Boots1000.feather')
+zipf2E2 = feather::read_feather('Feathers/englishZ2_E2Boots1000.feather')
+
+zipf0E0$Environ = 0
+zipf1E0$Environ = 0
+zipf2E0$Environ = 0
+zipf0E1$Environ = 1
+zipf1E1$Environ = 1
+zipf2E1$Environ = 1
+zipf0E2$Environ = 2
+zipf1E2$Environ = 2
+zipf2E2$Environ = 2
+
+zipf0E0$Zipf = 0
+zipf0E1$Zipf = 0
+zipf0E2$Zipf = 0
+zipf1E0$Zipf = 1
+zipf1E1$Zipf = 1
+zipf1E2$Zipf = 1
+zipf2E0$Zipf = 2
+zipf2E1$Zipf = 2
+zipf2E2$Zipf = 2
+
+Zipf = rbind(zipf2E2, zipf2E1, zipf2E0,
+             zipf1E2, zipf1E1, zipf1E0,
+             zipf0E2, zipf0E1, zipf0E0)
+
+mins = Zipf %>%
+  group_by(Word, amount, Zipf) %>%
+  summarise(Accuracy=mean(Accuracy)) %>%
+  ungroup() %>%
+  group_by(Word, Zipf) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Word) %>%
+  summarise(mins=max(amount))
+
+Zipf %>%
+  left_join(mins) %>%
+  mutate(Zipf=as.factor(Zipf),
+         Environ=as.factor(Environ)) %>%
+  filter(amount <= mins) %>%
+  ggplot(aes(x=amount, y=Accuracy, color=Zipf, linetype=Zipf)) +
+  facet_grid(Environ~Word, scales = 'free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){mean(x)-3*sd(x)/length(x)**.5},
+               fun.ymax=function(x){mean(x)+3*sd(x)/length(x)**.5},
+               geom='ribbon',
+               aes(fill=Zipf),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(),legend.position = 'bottom',
+        legend.margin = margin(-.25,0,0,0,unit='cm')) +
+  coord_cartesian(ylim=c(0,1))
+ggsave('../Figures/ZipfAnalysis.svg', width=10, height=4)
+
+```
+
+```{r z00}
+
+orders = zipf0E0 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z0_E0.svg', width=6, height=4)
+
+```
+
+```{r z01}
+
+orders = zipf0E1 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z0_E1.svg', width=6, height=4)
+
+```
+
+```{r z02}
+
+orders = zipf0E0 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z0_E2.svg', width=6, height=4)
+
+```
+
+```{r z10}
+
+orders = zipf1E0 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z1_E0.svg', width=6, height=4)
+
+```
+
+```{r z11}
+
+orders = zipf1E1 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z1_E1.svg', width=6, height=4)
+
+```
+
+```{r z12}
+
+orders = zipf1E2 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z1_E2.svg', width=6, height=4)
+
+```
+
+```{r z20}
+
+orders = zipf2E0 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z2_E0.svg', width=6, height=4)
+
+```
+
+```{r z21}
+
+orders = zipf2E1 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z2_E1.svg', width=6, height=4)
+
+```
+
+```{r z22}
+
+orders = zipf2E2 %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+    group_by(Position) %>%
+      filter(N==max(N)) %>%
+      mutate(Best='Best') %>%
+    ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Z2_E2.svg', width=6, height=4)
+
+cleanup()
+```
+
+# Lexicon Analysis
+
+```{r lex}
+juntos = feather::read_feather('Feathers/EnglishLexicon.feather')
+
+jMAX = juntos %>%
+  group_by(Prior, Recurse, Sim) %>%
+  filter(Accuracy > 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  group_by(Prior, Recurse) %>%
+  summarise(mins=max(amount)) %>%
+  pull(mins) %>% max() + 5
+
+
+juntos %>%
+  mutate(Recurse = fct_recode(Recurse, 'Non-Recursive'='nRecurse'),
+         Prior = fct_recode(Prior, 'Simplicity & Reuse'='Simplicity &\nReuse')) %>%
+  filter(Prior=='Simplicity') %>%
+ggplot(aes(amount, Accuracy, linetype=Recurse, color=Recurse)) +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){mean(x)-3*sd(x)/length(x)**.5},
+               fun.ymax=function(x){mean(x)+3*sd(x)/length(x)**.5},
+               geom='ribbon',
+               aes(fill=Recurse),
+               alpha=0.3,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=2,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = 'top',
+        legend.margin = margin(0,0,-.25,0,unit='cm'))
+ggsave('../Figures/EnglishLexicon.svg', width=11.3, height=8.5)
+
+cleanup()
+```
+
+## Simplicity Order
+
+```{r simplicity}
+amboW = feather::read_feather('Feathers/EnglishLexiconDSbyWord.feather')
+
+orders = amboW %>%
+  filter(Prior=='Simplicity') %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+               group_by(Position) %>%
+               filter(N==max(N)) %>%
+               mutate(Best='Best') %>%
+               ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_Lex_Simplicity.svg', width=6, height=4)
+
+amboW %>%
+  filter(Prior=='Simplicity') %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .1)},
+               fun.ymax=function(x){quantile(x, .9)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_Lex_Simplicity.svg', width=6, height=4)
+
+cleanup()
+```
+
+## Recursive Simplicity Order
+
+```{r recSimp}
+amboWR = feather::read_feather('Feathers/EnglishLexiconDSbyWord.feather')
+
+orders = amboWR %>%
+  filter(Prior=='Simplicity') %>%
+  group_by(Word, Sim) %>%
+  filter(Accuracy >= 0.99) %>%
+  summarise(amount=min(amount)) %>%
+  ungroup() %>%
+  arrange(amount) %>% 
+  group_by(Sim) %>% 
+  summarise(Order=paste(Word, collapse='.')) %>%
+  mutate(First   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][1]),
+         Second  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][2]),
+         Third   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][3]),
+         Fourth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][4]),
+         Fifth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][5]),
+         Sixth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][6]),
+         Seventh = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][7]),
+         Eighth  = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][8]),
+         Ninth   = map_chr(Order, function(x) strsplit(x, '.', fixed=T)[[1]][9]))
+
+sumd = orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  group_by(Position, Word) %>%
+  summarise(N=n()) %>%
+  ungroup() %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth'))
+
+sumd = sumd %>%
+  left_join( sumd %>%
+               group_by(Position) %>%
+               filter(N==max(N)) %>%
+               mutate(Best='Best') %>%
+               ungroup()
+  ) %>%
+  mutate(Best=ifelse(is.na(Best),'Z', Best))
+
+orders %>%
+  select(-Order) %>%
+  gather(Position, Word, First:Ninth) %>%
+  mutate(Position=fct_relevel(Position, "First", 'Second', 'Third', 'Fourth', 
+                              'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth')) %>%
+  left_join(sumd) %>%
+  mutate(Position=as.numeric(Position)) %>%
+  ggplot(aes(Position, N/1000, group=Word)) +
+  geom_line(aes(group=Sim), color='grey90', alpha=0.05, position = position_dodge(.05)) +
+  stat_summary(fun.y=mean, geom='point', aes(alpha=Best, color=Best)) +
+  stat_summary(fun.y=mean, geom='text_repel', aes(label=Word, color=Best, alpha=Best)) +
+  guides(color=F, alpha=F) +
+  theme_bw() +
+  scale_x_continuous(breaks=1:9, labels = 1:9) +
+  scale_alpha_manual(values=c(1,.2)) +
+  scale_color_manual(values=c('blue', 'black')) +
+  ylab('Probability of Acquisition') +
+  xlab('Order of Acquisition')
+ggsave('../Figures/OA_RecLex_Simplicity.svg', width=6, height=4)
+
+amboWR %>%
+  filter(Prior=='Simplicity') %>%
+  gather(variable, value, Accuracy:Recall) %>%
+  ggplot(aes(x=amount, value, color=variable, linetype=variable)) +
+  facet_wrap(~Word, scales='free_x') +
+  labs(y='Proportion', x='Number of Data Points') +
+  stat_summary(fun.ymin=function(x){quantile(x, .1)},
+               fun.ymax=function(x){quantile(x, .9)},
+               geom='ribbon',
+               aes(fill=variable),
+               alpha=0.25,
+               color=NA) +
+  stat_summary(fun.y=mean, 
+               geom='line',
+               size=1,
+               alpha=0.8) +
+  theme_bw() +
+  theme(legend.title=element_blank(), legend.position = c(0.8, 0.15)) 
+ggsave('../Figures/F1_RecLex_Simplicity.svg', width=6, height=4)
+
+cleanup()
+```
