@@ -46,7 +46,7 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'Generation'] #, 'Ancestry', 'Paternity']
+grammar_set = ['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
@@ -190,7 +190,7 @@ def run(word, data_amount):
 # Main Running
 ###################################################################################
 argarray = []
-for w in target.all_words():
+for w in target_words:
     argarray += map(lambda x: [w, x], options.data_pts * options.chains)
 
 if is_master_process():

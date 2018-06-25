@@ -311,14 +311,12 @@ iroquois.force_function('frat_s',
                         lambda recurse_, C, X: male_(setdifference_(children_of_(parents_of_(parents_of_(X, C), C), C),
                                                                     union_(recurse_('frat', C, X),
                                                                            recurse_('sor', C, X)))))
-iroquois.force_function('in_bro', lambda recurse_, C, X: male_(setdifference_(X,
-                                                                              children_of_(
+iroquois.force_function('in_bro', lambda recurse_, C, X: male_(setdifference_(children_of_(
                                                                                   union_(recurse_('frat', C, X),
-                                                                                         recurse_('sor', C, X)), C))))
-iroquois.force_function('in_sis', lambda recurse_, C, X: female_(setdifference_(X,
-                                                                                children_of_(
+                                                                                         recurse_('sor', C, X)), C), X)))
+iroquois.force_function('in_sis', lambda recurse_, C, X: female_(setdifference_(children_of_(
                                                                                     union_(recurse_('frat', C, X),
-                                                                                           recurse_('sor', C, X)), C))))
+                                                                                           recurse_('sor', C, X)), C), X)))
 iroquois.force_function('out_bro', lambda recurse_, C, X: male_(children_of_(union_(recurse_('frat_s', C, X),
                                                                                     recurse_('sor_m', C, X)), C)))
 iroquois.force_function('out_sis', lambda recurse_, C, X: female_(children_of_(union_(recurse_('frat_s', C, X),
