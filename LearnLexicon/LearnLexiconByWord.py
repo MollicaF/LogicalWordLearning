@@ -48,7 +48,7 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'Paternity', 'GenerationS', 'Taboo']
+grammar_set = ['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
@@ -174,9 +174,7 @@ def run(word, data_amount):
 
     hyps = TopN(N=options.top_count)
 
-    mhs = AnnealedMHSampler(h0, data, steps=options.steps, prior_schedule=SinSchedule(0.8, 1.5, 250))
-    # mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
-    # mhs = TabooMCMC(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
+    mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
         if samples_yielded % 1 == 0:
