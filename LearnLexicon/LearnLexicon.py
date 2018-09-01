@@ -25,7 +25,7 @@ parser.add_option("--chains", dest="chains", type="int", default=7,
                   help="Number of chains to run (new data set for each chain)")
 
 parser.add_option("--alpha", dest="alpha", type="float", default=0.90, help="Noise value")
-parser.add_option("--epsilon", dest="epsilon", type="int", default=0.50, help="Ego-centricity")
+parser.add_option("--epsilon", dest="epsilon", type="float", default=0.0, help="Ego-centricity")
 parser.add_option("--s", dest="s", type="int", default=0., help="zipf parameter")
 
 parser.add_option("--data", dest="data", type="int", default=-1,       help="Amount of data")

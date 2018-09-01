@@ -3,6 +3,8 @@ import sys
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.MPI.MPI_map import MPI_map, is_master_process
 from LOTlib.Inference.MetropolisHastings import MHSampler
+from LOTlib.Inference.Samplers.AnnealedMH import AnnealedMHSampler, SinSchedule
+from LOTlib.Inference.Samplers.TabooMCMC import TabooMCMC
 from LOTlib.Miscellaneous import display_option_summary, Infinity
 from LOTlib.TopN import TopN
 from LOTlib import break_ctrlc
@@ -46,7 +48,7 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity']
+grammar_set = ['Tree', 'Set', 'Gender', 'Paternity', 'GenerationS', 'Taboo']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
@@ -109,7 +111,7 @@ elif options.family == 'iroquois':
     target_words = iroquois_words
     if options.Prior is None:
         my_grammar = makeGrammar(four_gen_tree_objs, words=iroquois_words,
-                                 nterms=grammar_set, recursive=options.recurse)
+                                 nterms=grammar_set, recursive=options.recurse, terms=['X'])
     else:
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=iroquois_words,
                                        nterms=grammar_set, recursive=options.recurse)
@@ -172,7 +174,9 @@ def run(word, data_amount):
 
     hyps = TopN(N=options.top_count)
 
-    mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
+    mhs = AnnealedMHSampler(h0, data, steps=options.steps, prior_schedule=SinSchedule(0.8, 1.5, 250))
+    # mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
+    # mhs = TabooMCMC(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
         if samples_yielded % 1 == 0:
@@ -202,7 +206,7 @@ for fs in break_ctrlc(MPI_map(run, numpy.random.permutation(argarray), progress_
         if h not in seen:
             seen.add(h)
             if h.prior > -Infinity:
-                print h.prior, \
+                print '#####', h.prior, \
                     h.likelihood, \
                     h \
 

@@ -43,6 +43,11 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
         grammar.add_rule('SET', 'generation1_', ['SET', 'C'], 1.0)
         grammar.add_rule('SET', 'generation2_', ['SET', 'C'], 1.0)
 
+    if 'GenerationS' in nterms:
+        grammar.add_rule('SET', 'generation0_', ['SET', 'C'], 1.0)
+        grammar.add_rule('SET', 'generation1s_', ['SET', 'C'], 1.0)
+        grammar.add_rule('SET', 'generation2s_', ['SET', 'C'], 1.0)
+
     if 'Ancestry' in nterms:
         grammar.add_rule('SET', 'ancestors', ['SET', 'C'], 1.0)
         grammar.add_rule('SET', 'descendants', ['SET', 'C'], 1.0)
@@ -50,6 +55,11 @@ def makeGrammar(objects,  nterms=['Tree', 'Set', 'Gender', 'Generation', 'Ancest
     if 'Paternity' in nterms:
         grammar.add_rule('SET', 'maternal_', ['SET', 'C'], 1.0)
         grammar.add_rule('SET', 'paternal_', ['SET', 'C'], 1.0)
+
+    if 'Taboo' in nterms:
+        grammar.add_rule('SET', 'close_', ['SET', 'C'], 1.0)
+        #grammar.add_rule('SET', 'frat_', ['SET', 'C'], 1.0)
+        #grammar.add_rule('SET', 'sor_', ['SET', 'C'], 1.0)
 
     if 'English' in nterms:
         if compositional:

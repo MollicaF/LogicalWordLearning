@@ -100,6 +100,18 @@ def samegender_(x, c):
         return female_(all_(c))
 
 @primitive
+def frat_(x, c):
+    return male_(children_of_(parents_of_(male_(parents_of_(x, c)), c), c))
+
+@primitive
+def sor_(x, c):
+    return female_(children_of_(parents_of_(female_(parents_of_(x, c)), c), c))
+
+@primitive
+def close_(x, c):
+    return union_(frat_(x, c), sor_(x, c))
+
+@primitive
 def brothers_(X, C):
     return male_(setdifference_(children_of_(parents_of_(X, C), C), X))
 
@@ -166,10 +178,23 @@ def generation1_(X, C):
     return union_(children_of_(parents_of_(parents_of_(X, C), C), C), spouses_of_(children_of_(parents_of_(parents_of_(X, C), C), C),C))
 
 @primitive
+def generation1s_(X, C):
+    if len(X) != 1:
+        return set()
+    return children_of_(parents_of_(parents_of_(X, C), C), C)
+
+
+@primitive
 def generation2_(X, C):
     if len(X) != 1:
         return set()
     return parents_of_(generation1_(X, C), C)
+
+@primitive
+def generation2s_(X, C):
+    if len(X) != 1:
+        return set()
+    return parents_of_(generation1s_(X, C), C)
 
 @primitive
 def feature_(key, num, context):
