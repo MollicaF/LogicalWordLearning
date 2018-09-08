@@ -46,7 +46,7 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'Generation', 'Ancestry', 'Paternity']
+grammar_set = ['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
@@ -177,8 +177,8 @@ def run(data_amount):
     mhs = MHSampler(h0, data, options.steps, likelihood_temperature=options.llt, prior_temperature=options.prior_temp)
 
     for samples_yielded, h in break_ctrlc(enumerate(mhs)):
-        if samples_yielded % 100 == 0:
-            print h.prior, h.likelihood, h
+        #if samples_yielded % 100 == 0:
+        #    print h.prior, h.likelihood, h
         hyps.add(h)
 
     import pickle
