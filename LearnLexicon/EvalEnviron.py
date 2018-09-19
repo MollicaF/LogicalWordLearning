@@ -50,7 +50,7 @@ if options.recurse:
 elif options.grammar:
     grammar = list(hyps)[0].value[target.all_words()[0]].grammar
 else:
-    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo'])
 
 if options.datafile is None:
     if options.family=='english':
