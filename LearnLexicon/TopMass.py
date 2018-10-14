@@ -62,7 +62,7 @@ Mass = set()
 
 for a in range(1, 25, 2) + range(25, 251, 25):
     print "Grabbing Top " + str(options.Nsize) + " from " + str(a) + ' dp'
-    data = makeLexiconData(target, four_gen_tree_context, n=a)
+    data = makeZipfianLexiconData(target, four_gen_tree_context, n=a, alpha=0.9, s=0.0, epsilon=0.0)
     simplicity_mass = TopN(N=options.Nsize)
     reuse_mass = TopN(N=options.Nsize)
     for h in d:
