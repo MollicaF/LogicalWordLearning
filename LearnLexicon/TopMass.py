@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 from optparse import OptionParser
 from Model import *
-from Model.Givens import turkish, english, pukapuka, four_gen_tree_context, four_gen_tree_objs
+from Model.Givens import turkish, english, pukapuka, iroquois, four_gen_tree_context, four_gen_tree_objs
 from LOTlib.Inference.GrammarInference.Precompute import create_counts
 from LOTlib.TopN import TopN
 
@@ -26,7 +26,7 @@ if options.recurse:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
                           recursive=True, words=target.all_words())
 else:
-    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'])
+    grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo'])
 
 from scipy.special import beta
 def multdir(counts, alpha):
