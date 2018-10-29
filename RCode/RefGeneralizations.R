@@ -4,8 +4,8 @@ obs = c('Amanda', 'Anne', 'aragorn', 'Arwen', 'Brandy', 'Celebrindal', 'Clarice'
 
 # Hypothesis Space
 d = read.csv('../Spaces/topIroqLex.csv', header=F, strip.white = T)
-colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Reuse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), 'EGO', obs)
-ego = d[,c(1:8, (ncol(d)-length(obs)):ncol(d) )]
+colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Reuse', 'Recurse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), 'EGO', obs)
+ego = d[,c(1:9, (ncol(d)-length(obs)):ncol(d) )]
 
 data = feather::read_feather('Feathers/PosteriorIroquois600.feather')
 

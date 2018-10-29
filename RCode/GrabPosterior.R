@@ -4,7 +4,7 @@ source('utilities.R')
 obs = c('Amanda', 'Anne', 'aragorn', 'Arwen', 'Brandy', 'Celebrindal', 'Clarice', 'elrond', 'Eowyn', 'fabio', 'fred', 'frodo', 'Galadriel', 'gandalf', 'han', 'harry', 'Hermione', 'gary', 'james', 'joey', 'Katniss', 'legolas', 'Leia', 'Lily', 'luke', 'Luna', 'Mellissa', 'merry', 'Padme', 'peeta', 'Prue', 'ron', 'Rose', 'Sabrina', 'salem', 'sam', 'Zelda')
 
 d = read.csv('../Spaces/topIroqLex.csv', header=F, strip.white = T)
-colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Reuse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), obs)
+colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Reuse', 'Recurse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), obs)
 d = d[,c(1:9,11:(ncol(d)-1-length(obs)))]
 d = d %>% select(-Reuse)
 
@@ -30,19 +30,19 @@ eng = d %>%
 
 diseng = eng %>%
   select(-HypNo, -RPrior, -LPrior) %>%
-  filter(Recurse=='False') %>%
+  filter(Recurse==0) %>%
   distinct()
 
 data = NULL
-for (amt in seq(0, 600, 1)) {
+for (amt in seq(0, 200, 1)) {
   k = plyr::ddply(diseng, c('Word'), function(Z) {marg_post(Z, amt, 1)})
   data = rbind(data, k)
 }
 rm(k)
 
-#feather::write_feather(data, 'Feathers/PosteriorIroquois600.feather')
+#feather::write_feather(data, 'Feathers/PosteriorIroquois200.feather')
 
-data %>% filter(amount==600) %>%
+data %>% filter(amount==200) %>%
   group_by(Word) %>%
   filter(Posterior==max(Posterior)) %>%
   select(-amount) %>%

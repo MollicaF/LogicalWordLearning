@@ -6,6 +6,11 @@ from Model.FeatureGiven import *
 from scipy.special import beta
 from optparse import OptionParser
 from LOTlib.Inference.GrammarInference.Precompute import create_counts
+from LOTlib.Miscellaneous import attrmem,Infinity
+from LOTlib.Grammar import pack_string
+from LOTlib.Hypotheses.Priors.LZutil.IntegerCodes import to_fibonacci as integer2bits # Use Mackay's Fibonacci code
+from LOTlib.Hypotheses.Priors.LZutil.LZ2 import encode
+
 
 #############################################################################################
 #    Option Parser
@@ -88,6 +93,20 @@ def compute_reuse_prior(lex):
 
     return prior
 
+def compute_recursive_prior(lex):
+    s = ''
+    for tree in [lex.value[w] for w in lex.all_words()]:
+        if tree.value.count_subnodes() > getattr(tree, 'maxnodes', Infinity):
+            return -Infinity
+
+        s = s + tree.grammar.pack_ascii(tree.value)
+
+    # 1+ since it must be positive
+    bits = ''.join([ integer2bits(1+pack_string.index(x)) for x in s ])
+    c = encode(bits, pretty=0)
+
+    return -len(c)
+
 def do_I_abstract(h):
     return int( 'X' in [x.name for x in h.value.subnodes()])
 
@@ -139,7 +158,7 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
         findings.append([w,  # Word
                          hypothesis.value[w].compute_prior(),  # Hypothesis Prior
                          hypothesis.compute_prior(),  # Lexicon Prior
-                         compute_reuse_prior(hypothesis),  # Recursive Prior
+                         compute_recursive_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_reuse(hypothesis),
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
@@ -156,7 +175,7 @@ def Zcheap_assess_inv_hyp(hypothesis, target_lexicon, context):
         findings.append([w,  # Word
                          hypothesis.value[w].compute_prior(),  # Hypothesis Prior
                          hypothesis.compute_prior(),  # Lexicon Prior
-                         compute_reuse_prior(hypothesis),  # Recursive Prior
+                         compute_recursive_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_reuse(hypothesis),
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
