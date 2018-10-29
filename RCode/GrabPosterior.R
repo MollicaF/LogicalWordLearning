@@ -3,12 +3,13 @@ source('utilities.R')
 # Objects
 obs = c('Amanda', 'Anne', 'aragorn', 'Arwen', 'Brandy', 'Celebrindal', 'Clarice', 'elrond', 'Eowyn', 'fabio', 'fred', 'frodo', 'Galadriel', 'gandalf', 'han', 'harry', 'Hermione', 'gary', 'james', 'joey', 'Katniss', 'legolas', 'Leia', 'Lily', 'luke', 'Luna', 'Mellissa', 'merry', 'Padme', 'peeta', 'Prue', 'ron', 'Rose', 'Sabrina', 'salem', 'sam', 'Zelda')
 
-d = read.csv('../Spaces/Space/GenericTurkish.csv', header=F, strip.white = T)
-colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), obs)
-d = d[,c(1:8,10:(ncol(d)-1-length(obs)))]
+d = read.csv('../Spaces/topIroqLex.csv', header=F, strip.white = T)
+colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Reuse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), obs)
+d = d[,c(1:9,11:(ncol(d)-1-length(obs)))]
+d = d %>% select(-Reuse)
 
 # Ground Truth
-ground = read.csv('../Spaces/Keys/GenericTurkish_Key.csv', header=F, strip.white = T)
+ground = read.csv('../Spaces/Keys/GenericIroquois_Key.csv', header=F, strip.white = T)
 colnames(ground) = c('I','Word', rep(obs,length(obs)-1))
 row.names(ground) = ground$Word
 ground = as.matrix(ground[3:ncol(ground)])
@@ -29,7 +30,7 @@ eng = d %>%
 
 diseng = eng %>%
   select(-HypNo, -RPrior, -LPrior) %>%
-  filter(Recurse==0) %>%
+  filter(Recurse=='False') %>%
   distinct()
 
 data = NULL
@@ -39,7 +40,7 @@ for (amt in seq(0, 600, 1)) {
 }
 rm(k)
 
-#feather::write_feather(data, 'Feathers/PosteriorPukapuka600.feather')
+#feather::write_feather(data, 'Feathers/PosteriorIroquois600.feather')
 
 data %>% filter(amount==600) %>%
   group_by(Word) %>%

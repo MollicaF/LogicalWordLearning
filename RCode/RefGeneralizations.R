@@ -3,14 +3,14 @@ source('utilities.R')
 obs = c('Amanda', 'Anne', 'aragorn', 'Arwen', 'Brandy', 'Celebrindal', 'Clarice', 'elrond', 'Eowyn', 'fabio', 'fred', 'frodo', 'Galadriel', 'gandalf', 'han', 'harry', 'Hermione', 'gary', 'james', 'joey', 'Katniss', 'legolas', 'Leia', 'Lily', 'luke', 'Luna', 'Mellissa', 'merry', 'Padme', 'peeta', 'Prue', 'ron', 'Rose', 'Sabrina', 'salem', 'sam', 'Zelda')
 
 # Hypothesis Space
-d = read.csv('../Spaces/Space/GenericPukapuka.csv', header=F, strip.white = T)
-colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), 'EGO', obs)
+d = read.csv('../Spaces/topIroqLex.csv', header=F, strip.white = T)
+colnames(d) = c('LexNo', 'Word', 'HPrior', 'LPrior', 'RPrior', 'Abstract', 'Recurse', 'Reuse', 'Hypothesis', 'MODE', rep(obs,length(obs)-1), 'EGO', obs)
 ego = d[,c(1:8, (ncol(d)-length(obs)):ncol(d) )]
 
-data = feather::read_feather('Feathers/PosteriorPukapuka600.feather')
+data = feather::read_feather('Feathers/PosteriorIroquois600.feather')
 
 ego = ego %>% 
-  select(-LexNo, -HPrior, -LPrior, -RPrior, -Abstract, -Recurse, -EGO) %>%
+  select(-LexNo, -HPrior, -LPrior, -RPrior, -Abstract, -Recurse, -Reuse, -EGO) %>%
   distinct() %>%
   left_join(data)
 
