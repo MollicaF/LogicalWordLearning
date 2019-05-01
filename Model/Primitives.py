@@ -120,6 +120,10 @@ def sisters_(X, C):
     return female_(setdifference_(children_of_(parents_of_(X, C), C), X))
 
 @primitive
+def siblings_of_(X, C):
+    return setdifference_(children_of_(parents_of_(X, C), C), X)
+
+@primitive
 def moms_(X, C):
     return female_(parents_of_(X, C))
 

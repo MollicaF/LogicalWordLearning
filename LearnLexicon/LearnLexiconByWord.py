@@ -150,6 +150,7 @@ elif options.family == 'english':
     else:
         my_grammar = makeBiasedGrammar(four_gen_tree_objs, words=english_words,
                                        nterms=grammar_set, recursive=options.recurse)
+    my_grammar.add_rule('SET', 'siblings_of_', ['SET', 'C'], 1.0)
 
 else:
     from Model.Givens import target, four_gen_tree_context, genderless_english_words, four_gen_tree_objs
