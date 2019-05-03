@@ -48,7 +48,7 @@ else:
 ######################################################################################################
 #   Specify Language Grammar
 ######################################################################################################
-grammar_set = ['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo']
+grammar_set = ['Tree', 'Set', 'Gender', 'Generation', 'Taboo']
 if options.family == 'hawaiian':
     from Model.Givens import hawaiian, four_gen_tree_context, hawaiian_words, four_gen_tree_objs
 
