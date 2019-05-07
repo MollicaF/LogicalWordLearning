@@ -158,7 +158,6 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
         findings.append([w,  # Word
                          hypothesis.value[w].compute_prior(),  # Hypothesis Prior
                          hypothesis.compute_prior(),  # Lexicon Prior
-                         compute_reuse_prior(hypothesis),  # Recuse Prior
                          compute_recursive_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_reuse(hypothesis),
@@ -169,19 +168,24 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
         print findings[-1]
     return findings
 
+
 def full_assess_inv_hyp(hypothesis, target_lexicon, context):
     findings = []
+    lex_prior = hypothesis.compute_prior()
+    reuse_prior = compute_reuse_prior(hypothesis)
+    recursive_prior = compute_recursive_prior(hypothesis)
+    reuse_bool = do_I_reuse(hypothesis)
     for w in target_lexicon.all_words():
         findings.append([w,  # Word
                          hypothesis.value[w].compute_prior(),  # Hypothesis Prior
-                         hypothesis.compute_prior(),  # Lexicon Prior
-                         compute_recursive_prior(hypothesis),  # Recursive Prior
+                         lex_prior,  # Lexicon Prior
+                         reuse_prior,  # Reuse Prior
+                         recursive_prior,  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
-                         do_I_reuse(hypothesis),
+                         reuse_bool,
                          do_I_recurse(hypothesis.value[w]),  # Recursion?
                          '"' + str(h.value[w]) + '"', 'WORLD'] +
-                        [int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o] +
-                        ['EGO'] + [int(o in hypothesis(w, context, set([context.ego]))) for o in context.objects])  # Hypothesis
+                        [int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o])  # Hypothesis
         print findings[-1]
     return findings
 
