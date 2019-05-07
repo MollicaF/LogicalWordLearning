@@ -53,7 +53,7 @@ if options.recurse:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'Generation'],
                           recursive=True, words=target.all_words())
 elif options.grammar:
-    grammar = list(hyps)[0].value[target.all_words()[0]].grammar
+    grammar = list(hyps)[0].value[list(hyps)[0].all_words()[0]].grammar
 else:
     grammar = makeGrammar(four_gen_tree_objs, nterms=['Tree', 'Set', 'Gender', 'GenerationS', 'Taboo'])
 
@@ -158,6 +158,23 @@ def cheap_assess_inv_hyp(hypothesis, target_lexicon, context):
         findings.append([w,  # Word
                          hypothesis.value[w].compute_prior(),  # Hypothesis Prior
                          hypothesis.compute_prior(),  # Lexicon Prior
+                         compute_reuse_prior(hypothesis),  # Recuse Prior
+                         compute_recursive_prior(hypothesis),  # Recursive Prior
+                         do_I_abstract(hypothesis.value[w]),  # Abstraction?
+                         do_I_reuse(hypothesis),
+                         do_I_recurse(hypothesis.value[w]),  # Recursion?
+                         '"' + str(h.value[w]) + '"', 'WORLD'] +
+                        [int(o in hypothesis(w, context, set([ego]))) for ego in context.objects for o in context.objects if ego != o] +
+                        ['EGO'] + [int(o in hypothesis(w, context, set([context.ego]))) for o in context.objects])  # Hypothesis
+        print findings[-1]
+    return findings
+
+def full_assess_inv_hyp(hypothesis, target_lexicon, context):
+    findings = []
+    for w in target_lexicon.all_words():
+        findings.append([w,  # Word
+                         hypothesis.value[w].compute_prior(),  # Hypothesis Prior
+                         hypothesis.compute_prior(),  # Lexicon Prior
                          compute_recursive_prior(hypothesis),  # Recursive Prior
                          do_I_abstract(hypothesis.value[w]),  # Abstraction?
                          do_I_reuse(hypothesis),
@@ -193,9 +210,10 @@ result_strings = []
 
 for s, h0 in enumerate(hyps):
     h = KinshipLexicon(alpha=options.alpha, epsilon=options.epsilon, s=options.s)
+    # sourceWord = h0.all_words()[0]
     for w in h0.all_words():
         h0.value[w].grammar = grammar
-        h.set_word(w, h0.value[w])
+        # h.set_word(w, h0.value[sourceWord])
     # h.compute_likelihood(huge_data, eval=True)
     # h.point_ll = h.likelihood / len(huge_data)
     if options.zipf:
@@ -204,7 +222,7 @@ for s, h0 in enumerate(hyps):
             result_strings.append(', '.join(str(i) for i in result))
             results.append(result)
     else:
-        for wrd in cheap_assess_inv_hyp(h, target, the_context):
+        for wrd in full_assess_inv_hyp(h, target, the_context):
             result = [s] + wrd
             result_strings.append(', '.join(str(i) for i in result))
             results.append(result)
