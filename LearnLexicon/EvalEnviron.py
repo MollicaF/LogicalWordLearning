@@ -217,7 +217,7 @@ for s, h0 in enumerate(hyps):
     # sourceWord = h0.all_words()[0]
     for w in h0.all_words():
         h0.value[w].grammar = grammar
-        # h.set_word(w, h0.value[sourceWord])
+        h.set_word(w, h0.value[w])
     # h.compute_likelihood(huge_data, eval=True)
     # h.point_ll = h.likelihood / len(huge_data)
     if options.zipf:
