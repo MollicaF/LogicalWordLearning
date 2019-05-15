@@ -1,4 +1,5 @@
 library(tidyverse)
+library(forcats)
 library(ggrepel)
 library(xkcd)
 
@@ -27,6 +28,30 @@ ggplot(reliable, aes(Order, P)) +
   theme(plot.title = element_text(hjust = 0.5))
 #ggsave('../Figures/Acc_Reliable.pdf', width = 6, height=4)
 
+reliable %>%
+  mutate(Word = case_when( Word == 'W1' ~ 'mother',
+                           Word == 'W2' ~ 'father',
+                           Word == 'W3' ~ 'brother',
+                           Word == 'W4' ~ 'sister',
+                           Word == 'W5' ~ 'grandma',
+                           Word == 'W6' ~ 'grandpa',
+                           Word == 'W7' ~ 'aunt',
+                           Word == 'W8' ~ 'uncle',
+                           T ~ 'cousin'),
+         Word = fct_relevel(Word, 'cousin','uncle','aunt','grandpa','grandma','sister','brother','father','mother')) %>%
+ggplot(aes(Order, Word, color=P)) +
+  geom_point(aes(size=P), shape=15) +
+  scale_size_continuous(range = c(3,15)) + 
+  scale_color_gradient(low = "white", high = "black", limits=c(0,1)) + 
+  guides(size=F) +
+  xlab('Order of Acquisition') +
+  ggtitle('Accurate Reliable') +
+  coord_equal() +
+  scale_x_continuous(breaks=1:9) +
+  theme_xkcd() +
+  theme(plot.title = element_text(hjust = 0.5))
+#ggsave('../Figures/Acc_Reliable_tile.svg', width = 6.25, height=6)
+
 Nreliable = data.frame(Order=rep(1:9, 3)) %>%
   mutate (Word=c('W3', 'W5', 'W2', 'W8', 'W4', 'W7', 'W9', 'W6', 'W1',
                  'W2', 'W1', 'W5', 'W3', 'W6', 'W4', 'W8', 'W9', 'W7',
@@ -53,6 +78,29 @@ ggplot(Nreliable, aes(Order, P)) +
   theme(plot.title = element_text(hjust = 0.5))
 #ggsave('../Figures/NAcc_Reliable.pdf', width = 6, height=4)
 
+Nreliable %>%
+  mutate(Word = case_when( Word == 'W1' ~ 'mother',
+                           Word == 'W2' ~ 'father',
+                           Word == 'W3' ~ 'brother',
+                           Word == 'W4' ~ 'sister',
+                           Word == 'W5' ~ 'grandma',
+                           Word == 'W6' ~ 'grandpa',
+                           Word == 'W7' ~ 'aunt',
+                           Word == 'W8' ~ 'uncle',
+                           T ~ 'cousin'),
+         Word = fct_relevel(Word, 'cousin','uncle','aunt','grandpa','grandma','sister','brother','father','mother')) %>%
+  ggplot(aes(Order, Word, color=P)) +
+  geom_point(aes(size=P), shape=15) +
+  scale_size_continuous(range = c(3,15)) + 
+  scale_color_gradient(low = "white", high = "black", limits=c(0,1)) + 
+  guides(size=F) +
+  xlab('Order of Acquisition') +
+  ggtitle('Inaccurate Reliable') +
+  coord_equal() +
+  scale_x_continuous(breaks=1:9) +
+  theme_xkcd() +
+  theme(plot.title = element_text(hjust = 0.5))
+#ggsave('../Figures/NAcc_Reliable_tile.svg', width = 6.25, height=6)
 
 unreliable = data.frame(Order=rep(1:9, 3)) %>%
   mutate (Word=c('W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9',
@@ -79,6 +127,30 @@ ggplot(unreliable, aes(Order, P)) +
   theme(plot.title = element_text(hjust = 0.5))
 #ggsave('../Figures/Acc_NReliable.pdf', width = 6, height=4)
 
+unreliable %>%
+  mutate(Word = case_when( Word == 'W1' ~ 'mother',
+                           Word == 'W2' ~ 'father',
+                           Word == 'W3' ~ 'brother',
+                           Word == 'W4' ~ 'sister',
+                           Word == 'W5' ~ 'grandma',
+                           Word == 'W6' ~ 'grandpa',
+                           Word == 'W7' ~ 'aunt',
+                           Word == 'W8' ~ 'uncle',
+                           T ~ 'cousin'),
+         Word = fct_relevel(Word, 'cousin','uncle','aunt','grandpa','grandma','sister','brother','father','mother')) %>%
+  ggplot(aes(Order, Word, color=P)) +
+  geom_point(aes(size=P), shape=15) +
+  scale_size_continuous(range = c(3,15)) + 
+  scale_color_gradient(low = "white", high = "black", limits=c(0,1)) + 
+  guides(size=F) +
+  xlab('Order of Acquisition') +
+  ggtitle('Accurate Unreliable') +
+  coord_equal() +
+  scale_x_continuous(breaks=1:9) +
+  theme_xkcd() +
+  theme(plot.title = element_text(hjust = 0.5))
+#ggsave('../Figures/Acc_NReliable_tile.svg', width = 6.25, height=6)
+
 Nunreliable = data.frame(Order=rep(1:9, 3)) %>%
   mutate(Word=c('W3', 'W5', 'W2', 'W8', 'W4', 'W7', 'W9', 'W6', 'W1',
                  'W2', 'W1', 'W5', 'W3', 'W6', 'W4', 'W8', 'W9', 'W7',
@@ -103,4 +175,28 @@ ggplot(Nunreliable, aes(Order, P)) +
   theme_xkcd() +
   theme(plot.title = element_text(hjust = 0.5))
 #ggsave('../Figures/NAcc_NReliable.pdf', width = 6, height=4)
+
+Nunreliable %>%
+  mutate(Word = case_when( Word == 'W1' ~ 'mother',
+                           Word == 'W2' ~ 'father',
+                           Word == 'W3' ~ 'brother',
+                           Word == 'W4' ~ 'sister',
+                           Word == 'W5' ~ 'grandma',
+                           Word == 'W6' ~ 'grandpa',
+                           Word == 'W7' ~ 'aunt',
+                           Word == 'W8' ~ 'uncle',
+                           T ~ 'cousin'),
+         Word = fct_relevel(Word, 'cousin','uncle','aunt','grandpa','grandma','sister','brother','father','mother')) %>%
+  ggplot(aes(Order, Word, color=P)) +
+  geom_point(aes(size=P), shape=15) +
+  scale_size_continuous(range = c(3,15)) + 
+  scale_color_gradient(low = "white", high = "black", limits=c(0,1)) + 
+  guides(size=F) +
+  xlab('Order of Acquisition') +
+  ggtitle('Inaccurate Unreliable') +
+  coord_equal() +
+  scale_x_continuous(breaks=1:9) +
+  theme_xkcd() +
+  theme(plot.title = element_text(hjust = 0.5))
+#ggsave('../Figures/NAcc_NReliable_tile.svg', width = 6.25, height=6)
 

@@ -41,7 +41,7 @@ for (j in 1:NBOOT) {
   dist = sizePrinciple(ground, N=350, alph = 0.9)
   
   lex = d %>%
-    mutate(RPrior=ifelse(grepl('True',Reuse), log(GAMMA)+RPrior, log(1-GAMMA)+RPrior)) %>%
+    #mutate(RPrior=ifelse(grepl('True',Reuse), log(GAMMA)+RPrior, log(1-GAMMA)+RPrior)) %>%
     select(-Reuse) %>%
     do(lHyp2Stats(., dist, ground, alpha=0.9, O=length(obs))) %>%
     mutate(ACC=ifelse(Correct==Proposed & Proposed==Truth, 1, 0),
