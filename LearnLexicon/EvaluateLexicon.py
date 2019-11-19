@@ -7,7 +7,7 @@ from LOTlib.Miscellaneous import log
 from LOTlib.Eval import RecursionDepthException
 from LOTlib.Hypotheses.Priors.LZPrior import *
 from optparse import OptionParser
-from LOTlib.Inference.GrammarInference.Precompute import create_counts
+from LOTlib.GrammarInference.Precompute import create_counts
 
 #############################################################################################
 #    Option Parser
