@@ -3,7 +3,8 @@ from LOTlib.Hypotheses.Lexicon.RecursiveLexicon import RecursiveLexicon
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.Eval import EvaluationException, RecursionDepthException
 from Utilities import reachable, zipf
-from LOTlib.Inference.GrammarInference.Precompute import create_counts #
+# from LOTlib.Inference.GrammarInference.Precompute import create_counts #
+from LOTlib.GrammarInference.Precompute import create_counts #
 from Grammar import makeGrammar
 import numpy as np
 

@@ -1,7 +1,7 @@
 from Data import KinshipContext
 from Model.Hypothesis import KinshipLexicon
 from Model.Primitives import *
-from LOTlib.Evaluation.Eval import primitive
+from LOTlib.Eval import primitive
 
 # Info1's Family Tree
 

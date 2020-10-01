@@ -2,7 +2,7 @@ import numpy
 import sys
 from LOTlib.Hypotheses.LOTHypothesis import LOTHypothesis
 from LOTlib.MPI.MPI_map import MPI_map, is_master_process
-from LOTlib.Inference.MetropolisHastings import MHSampler
+from LOTlib.Inference.Samplers.MetropolisHastings import MHSampler
 from LOTlib.Miscellaneous import display_option_summary, Infinity
 from LOTlib.TopN import TopN
 from LOTlib import break_ctrlc
