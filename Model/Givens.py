@@ -65,6 +65,19 @@ fg_distance = {'Amanda': 6,
              'sam': 12,
              'Zelda': 7}
 
+sg_distance = {'Snow': 3,
+               'charming': 3,
+               'Emma': 2,
+               'Mira': 3,
+               'rump': 3,
+               'Regina': 3,
+               'henry': 4,
+               'neal': 3,
+               'baelfire': 2,
+               'Maryann': 3,
+               'ego': 1}
+
+
 ####################################################################################
 #   Contexts
 ####################################################################################
@@ -76,7 +89,7 @@ simple_tree_context = KinshipContext(simple_tree_objs,
                         ('parent', 'Mira', 'Regina'), ('parent', 'rump', 'baelfire'), ('parent', 'rump', 'Regina'),
                         ('spouse', 'baelfire', 'Emma'), ('spouse', 'Emma', 'baelfire'), ('parent', 'Emma', 'Maryann'),
                         ('parent', 'baelfire', 'Maryann'), ('parent', 'Emma', 'ego'), ('parent', 'baelfire', 'ego'), 
-                        ('parent', 'Regina', 'henry')], ego='ego')
+                        ('parent', 'Regina', 'henry')], ego='ego', distance=sg_distance)
 
 four_gen_tree_context = KinshipContext(four_gen_tree_objs,
                      [  ('parent', 'james', 'Luna'), ('parent', 'james', 'harry'), ('parent', 'Lily', 'Luna'),
